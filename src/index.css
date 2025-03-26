@@ -1,68 +1,41 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
+html,
+body,
+#root {
+  padding: 0;
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  height: 100%;
+  width: 100%;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+@theme {
+  --color-custom-blue: #5A67D8;
+  --color-custom-green: #34C759;
+  --color-deep-sky-50: #F6FBEF;
+  --color-deep-sky-100: #DDEEFD;
+  --color-deep-sky-200: #B7DAFB;
+  --color-deep-sky-400: #1B5E9D;
+  --color-deep-sky-500: #0E7DE8;
+  --color-hadopelagic: #04041F;
+  --color-long-haul: #052176;
+  --color-galactic-200: #9586BF;
+  --color-galactic-500: #3E238B;
+  --color-galactic-600: #5C238B;
+  --color-mars-red: #BB252D;
+  --color-aircraft-white: #EFF2F9;
+  --color-asl-black: #1A1A1E;
+  --color-dark-grey-200: #27272A;
+  --color-dark-grey-300: #3F3F45;
+  --color-dark-grey-400: #52525B;
+  --color-dark-grey-500: #71717A;
+  --color-grey-400: #8E8E9A;
+  --color-base-100: #E4E4E7;
+  --color-base-200: #A1A1AA;
+  --color-elevation-0: #1A1A1E;
+  --color-asl-color-text-100: #E4E4E7;
+  --color-asl-color-text-200: #A1A1AA;
+  --color-asl-color-text-300: #55555D;
+  --color-asl-color-text-400: #3D3D42;
+  --color-asl-color-text-invert: #131316;
 }

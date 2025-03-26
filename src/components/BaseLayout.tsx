@@ -1,5 +1,6 @@
 import { MapViewState } from "deck.gl";
 import { DeckMap } from "./DeckMap";
+import Panel from "./Panel";
 
 export const BaseLayout = () => {
 
@@ -10,18 +11,19 @@ export const BaseLayout = () => {
     pitch: 0,
     bearing: 0,
   };
-
   return (
     <>
-      <div className="grid grid-cols-12 gap-0 h-screen overflow-hidden ">
+      <div className="grid grid-cols-12 gap-0 h-screen overflow-visible ">
         <DeckMap
           view_state={INITIAL_VIEW_STATE}
           layers={[]}
         />
+        <div className="col-span-5 z-30 bg-none ">
+          <Panel />
+        </div>
       </div >
     </>
   );
 }
 export default BaseLayout
-
 
