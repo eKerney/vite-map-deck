@@ -1,9 +1,10 @@
 // src/components/D3Panel.tsx
-import React, { useEffect, useRef } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
+import { MapViewState } from 'deck.gl';
 
-const D3Globe: React.FC = () => {
+export const D3Globe = ({ onGlobeClick }: { onGlobeClick: Dispatch<SetStateAction<MapViewState>> }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
@@ -52,23 +53,24 @@ const D3Globe: React.FC = () => {
           .attr('fill', '#1A1A1A')
           .attr('stroke', 'white');
 
-        // Basic rotation animation
-        // let lambda = 0;
-        // d3.timer(() => {
-        //   lambda += 0.1; // Rotate speed
-        //   projection.rotate([lambda, 0]);
-        //   g.selectAll('path').attr('d', path);
-        // });
+        // Rotation state
+        let lambda = 0; // Longitude
+        let phi = 0;   // Latitude
+        // Auto-rotation
+        d3.timer(() => {
+          lambda += 0.1; // Spin speed
+          projection.rotate([lambda, phi]);
+          land.attr('d', path);
+          g.select('circle').attr('d', path);
+        });
 
         // Drag behavior
         const drag = d3.drag<SVGSVGElement, unknown>()
           .on('drag', (event) => {
-            const [lambda, phi] = projection.rotate();
             const sensitivity = 0.25;
-            projection.rotate([
-              lambda + event.dx * sensitivity,
-              phi - event.dy * sensitivity,
-            ]);
+            lambda += event.dx * sensitivity;
+            phi -= event.dy * sensitivity;
+            projection.rotate([lambda, phi]);
             land.attr('d', path);
             g.select('circle').attr('d', path);
           });
@@ -81,6 +83,15 @@ const D3Globe: React.FC = () => {
             land.attr('d', path);
             g.select('circle').attr('r', event.transform.k);
           });
+
+        // Click handler
+        svg.on('click', (event) => {
+          const [x, y] = d3.pointer(event, svg.node());
+          const coords = 'invert' in projection ? projection.invert!([x - width / 2, y - height / 2]) : [];
+          if (coords) {
+            onGlobeClick((prevCoords) => { return { ...prevCoords, latitude: coords[1], longitude: coords[0], zoom: 8 } });
+          }
+        });
 
         // Apply drag and zoom to SVG
         svg.call(drag).call(zoom);

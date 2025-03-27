@@ -8,13 +8,13 @@ export const DeckMap = ({ view_state, layers }:
   const memoizedLayers = useMemo(() => [...layers], [layers]);
   useEffect(() => console.log('MAP_KEY: ', MAP_KEY), []);
 
-  const [viewState, setViewState] = useState<MapViewState>({
-    longitude: view_state.longitude,
-    latitude: view_state.latitude,
-    zoom: view_state.zoom,
-    pitch: view_state.pitch,
-    bearing: view_state.bearing
-  });
+  // const [viewState, setViewState] = useState<MapViewState>({
+  //   longitude: view_state.longitude,
+  //   latitude: view_state.latitude,
+  //   zoom: view_state.zoom,
+  //   pitch: view_state.pitch,
+  //   bearing: view_state.bearing
+  // });
 
   const getTooltip = (info: any) => {
     if (!info.object) {
@@ -26,7 +26,7 @@ export const DeckMap = ({ view_state, layers }:
 
   return (
     <DeckGL
-      initialViewState={viewState}
+      initialViewState={view_state}
       controller
       layers={[...memoizedLayers]}
       getTooltip={getTooltip}
