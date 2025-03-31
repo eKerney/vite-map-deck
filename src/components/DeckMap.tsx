@@ -1,9 +1,13 @@
 import DeckGL, { Layer, MapViewState } from 'deck.gl';
 import { Map, FullscreenControl } from 'react-map-gl/maplibre';
-import { useEffect, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
-export const DeckMap = ({ view_state, layers }:
-  { view_state: MapViewState, layers: Layer[] }) => {
+export const DeckMap = memo(({ view_state, layers, onViewStateChange }:
+  {
+    view_state: MapViewState,
+    layers: Layer[],
+    onViewStateChange: (update: { viewState: any }) => void;
+  }) => {
 
   const MAP_KEY = import.meta.env.VITE_MAP_KEY, MAP_STYLE = import.meta.env.VITE_MAP_DARK;
   const memoizedLayers = useMemo(() => [...layers], [layers]);
@@ -33,4 +37,4 @@ export const DeckMap = ({ view_state, layers }:
     </DeckGL >
   )
 }
-
+)
