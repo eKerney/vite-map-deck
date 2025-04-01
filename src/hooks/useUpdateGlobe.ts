@@ -1,14 +1,13 @@
-import { RefObject } from "react";
+import { Dispatch, RefObject, SetStateAction } from "react";
 import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
-import { MapViewState } from "deck.gl";
+import { FlyToInterpolator, MapViewState } from 'deck.gl';
 
 export const updateGlobe = (
   svgRef: RefObject<SVGSVGElement | null>,
   width: number,
   height: number,
-  onGlobeClick: (coords: [number, number] | never[], screenPos: [number, number], viewState: MapViewState) => void,
-  viewState: MapViewState,
+  onGlobeClick: Dispatch<SetStateAction<MapViewState>>,
 ) => {
 
   const radius = Math.min(width, height) / 3;
@@ -43,7 +42,6 @@ export const updateGlobe = (
         .attr('fill', '#1A1A1A')
         .attr('stroke', 'white');
       // Rotation state
-
       let lambda = 0; // Longitude
       let phi = 0;   // Latitude
       d3.timer(() => {
@@ -74,7 +72,18 @@ export const updateGlobe = (
       svg.on('click', (event) => {
         const [x, y] = d3.pointer(event, svg.node());
         const coords = 'invert' in projection ? projection.invert!([x - width / 2, y - height / 2]) : [];
-        if (coords) onGlobeClick(coords, [x, y], viewState)
+        if (coords) {
+          onGlobeClick((prevCoords) => {
+            return {
+              ...prevCoords,
+              latitude: coords[1],
+              longitude: coords[0],
+              zoom: 11,
+              transitionInterpolator: new FlyToInterpolator({ speed: 1 }),
+              transitionDuration: 'auto'
+            }
+          });
+        }
       });
       // Apply drag and zoom to SVG
       svg.call(drag).call(zoom);
@@ -84,5 +93,4 @@ export const updateGlobe = (
     })
     .catch(error => console.error('Error loading GeoJSON:', error));
 };
-
 
