@@ -1,7 +1,7 @@
 import { MapViewState } from "deck.gl";
 import { DeckMap } from "./DeckMap";
 import D3Globe from "./D3Globe";
-import { useState } from "react";
+import { RefObject, useState } from "react";
 import { handleGlobeClick } from "../utilities/utilFuncs";
 
 export const BaseLayout = () => {
@@ -12,7 +12,8 @@ export const BaseLayout = () => {
   const globeClickCallback = (
     coords: [number, number] | never[],
     screenPos: [number, number],
-  ) => handleGlobeClick(coords, screenPos, setViewState);
+    svgRef: RefObject<SVGSVGElement | null>,
+  ) => handleGlobeClick(coords, screenPos, svgRef, setViewState);
 
   return (
     <>

@@ -1,9 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { RefObject, useEffect, useRef } from 'react';
 import useWindowSize from '../hooks/useWindowSize';
 import { updateGlobe } from '../utilities/utilFuncs';
 
 interface D3PanelProps {
-  onGlobeClick: (coords: [number, number] | never[], screenPos: [number, number]) => void,
+  onGlobeClick: (coords: [number, number] | never[],
+    screenPos: [number, number],
+    svgRef: RefObject<SVGSVGElement | null>,
+  ) => void,
 };
 
 export const D3Globe = ({ onGlobeClick }: D3PanelProps) => {
