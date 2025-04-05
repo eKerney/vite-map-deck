@@ -2359,6 +2359,11 @@ d3@^7.9.0:
     d3-transition "3"
     d3-zoom "3"
 
+daisyui@^5.0.12:
+  version "5.0.12"
+  resolved "https://registry.yarnpkg.com/daisyui/-/daisyui-5.0.12.tgz#00c684b664cefa292aa0399bf1dcd76af415b291"
+  integrity sha512-01DU0eYBcHgPtuf5fxcrkGkIN6/Uyaqmkle5Yo3ZyW9YVAu036ALZbjv2KH5euvUbeQ4r9q3gAarGcf7Tywhng==
+
 debug@^4.1.0, debug@^4.3.1, debug@^4.3.2, debug@^4.3.4:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.4.0.tgz#2b3f2aea2ffeb776477460267377dc8710faba8a"

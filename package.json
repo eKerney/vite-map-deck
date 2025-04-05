@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.0.17",
     "d3": "^7.9.0",
+    "daisyui": "^5.0.12",
     "deck.gl": "^9.1.8",
     "maplibre-gl": "^5.2.0",
     "react": "^19.0.0",

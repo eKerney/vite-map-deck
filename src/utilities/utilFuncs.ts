@@ -30,7 +30,7 @@ export const updateGlobe = (
   // Globe background (ocean)
   g.append('circle')
     .attr('r', radius)
-    .attr('fill', '#71717A')
+    .attr('fill', '#3a7e99')
   d3.json('https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_land.geojson')
     .then((world: any) => {
       // Draw landmasses
@@ -39,17 +39,20 @@ export const updateGlobe = (
         .enter()
         .append('path')
         .attr('d', path)
-        .attr('fill', '#1A1A1A')
-        .attr('stroke', 'white');
+        .attr('fill', '#05fcb6')
+        .attr('stroke', '#043c42');
+      //
       // Rotation state
       let lambda = 0; // Longitude
       let phi = 0;   // Latitude
       d3.timer(() => {
-        lambda += 0.1; // Spin speed
+        lambda += 0.5; // Spin speed
         projection.rotate([lambda, phi]);
         land.attr('d', path);
         g.select('circle').attr('d', path);
       });
+      //
+      //
       const drag = d3.drag<SVGSVGElement, unknown>()
         .on('drag', (event) => {
           const sensitivity = 0.25;
@@ -112,7 +115,7 @@ export const handleGlobeClick = (
         .style('top', `${fTop}px`)
         .style('width', `${fWidth}px`)
         .style('height', `${fHeight}px`)
-        .style('opacity', 0.9);
+        .style('opacity', 0.5);
       drawLines(screenPos, { w: fWidth, h: fHeight, l: fLeft, t: fTop }, svgRef);
     } else {
       mapPanel
@@ -140,7 +143,7 @@ export const handleGlobeClick = (
       ...prev,
       latitude: coords[1],
       longitude: coords[0],
-      zoom: 8,
+      zoom: 9,
       transitionDuration: 2000,
       transitionInterpolator: new FlyToInterpolator(),
     })
@@ -156,41 +159,35 @@ export const drawLines = (
   const svg = d3.select(svgRef.current)
   svg.selectAll(".connecting-line").remove();
 
-  // Convert Globe lat/lon to screen x/y
   const [globeX, globeY] = screenPos;
-  const cor = 100;
+  const cor = 96;
   const deckCorners = [
-    [dim.l - cor, dim.t + cor / 4], // Top-left
-    [dim.l + dim.w - cor, dim.t + cor / 4], // Top-right
-    [dim.l - cor, dim.t + dim.h + cor / 4], // Bottom-left
-    [dim.l + dim.w - cor, dim.t + dim.h - cor / 4] // Bottom-right
+    [dim.l - cor + 4, dim.t + cor / 3], // Top-left
+    [dim.l + dim.w - cor, dim.t + cor / 3], // Top-right
+    [dim.l - cor + 4, dim.t + dim.h + cor / 4], // Bottom-left
+    [dim.l + dim.w - cor, dim.t + dim.h - cor / 2] // Bottom-right
   ];
 
-  console.log(deckCorners)
-
-  deckCorners.forEach(([deckX, deckY]) => {
-    svg.append("path")
-      // .attr("class", "connecting-line") // Unique class for easy removall
-      // .attr("d", `M${globeX},${globeY} Q${(globeX + deckX - 100) / 2},${(globeY + deckY - 100) / 2 - 50} ${deckX},${deckY}`)
-      // .attr("stroke", "rgba(255, 255, 255, 0.3)") // Faint white
-      // .attr("stroke-width", 2)
-      // .attr("fill", "none")
-      // .style("stroke-dasharray", "5,5") // Optional dashed effect
-      // .transition()
-      // .duration(2000)
-      // .ease(d3.easeQuadOut)
-      // .attr("stroke-opacity", 1);
-      .attr("class", "connecting-line") // Unique class for removal
+  deckCorners.forEach(([deckX, deckY], i) => {
+    const path = svg.append("path")
+      .attr("class", "connecting-line")
       .attr("d", `M${globeX},${globeY} Q${(globeX + deckX) / 2},${(globeY + deckY) / 2 - 50} ${deckX},${deckY}`)
-      .attr("stroke", "rgba(255, 255, 255, 0.3)") // Faint white
+      .attr("stroke", "rgba(255, 255, 255, 0.4)")
       .attr("stroke-width", 2)
+      // .style("stroke-dasharray", "10,10") // Optional dashed effect
+      .attr("filter", "drop-shadow(0px 0px 4px rgba(255,255,255,0.5))")
       .attr("fill", "none")
-      .style("stroke-dasharray", "10")  // Total length of dashes
-      .style("stroke-dashoffset", "1") // Start with full offset (invisible)
+      .style('opacity', 0.3);
+
+    const totalLength = path.node().getTotalLength();
+    path
+      .attr("stroke-dasharray", totalLength)
+      .attr("stroke-dashoffset", totalLength) // Start hidden
       .transition()
-      .duration(1200)
+      .duration(1600)
+      .delay(i * 100) // optional: slight delay for stagger
       .ease(d3.easeQuadOut)
-      .style("stroke-dashoffset", "0"); // Reveal line smoothly
+      .attr("stroke-dashoffset", 0) // Reveal
   });
 
 };
