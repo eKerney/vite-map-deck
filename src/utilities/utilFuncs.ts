@@ -46,7 +46,7 @@ export const updateGlobe = (
       let lambda = 0; // Longitude
       let phi = 0;   // Latitude
       d3.timer(() => {
-        lambda += 0.5; // Spin speed
+        lambda += 0.1; // Spin speed
         projection.rotate([lambda, phi]);
         land.attr('d', path);
         g.select('circle').attr('d', path);
