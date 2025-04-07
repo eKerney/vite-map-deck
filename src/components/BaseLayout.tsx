@@ -19,7 +19,7 @@ export const BaseLayout = () => {
 
   return (
     <>
-      <div className="grid grid-cols-12 grid-rows-6 gap-0 h-screen overflow-visible bg-elevation-0 ">
+      <div className="grid grid-cols-12 grid-rows-6 gap-0 h-screen overflow-visible bg-elevation-0   ">
 
         <div className="w-screen row-span-6 flex justify-center items-center " >
           <D3Globe onGlobeClick={globeClickCallback} />
