@@ -44,12 +44,12 @@ export const BaseLayout = () => {
             items={controls}
             renderItems={(d, i) => (
               <div key={`${d[0]}-${i}`} className="w-full max-w-xl ">
-                <label className="label"><span className="label-text text-sm">{d[0]}</span></label>
+                <label className="label"><span className="label-text ">{d[0]}</span></label>
                 <input
                   type="range"
                   min={.05}
                   max={.25}
-                  className="range range-accent w-full"
+                  className="range range-sm range-accent w-full"
                   step={.05}
                   onChange={d[2]}
                   value={controlsState.rotation}

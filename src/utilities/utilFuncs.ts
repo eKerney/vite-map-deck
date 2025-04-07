@@ -3,11 +3,40 @@ import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
 import { FlyToInterpolator, MapViewState } from "deck.gl";
 import { ControlProps } from "../components/BaseLayout";
+import { GeoJSONFeature } from "maplibre-gl";
+import * as h3 from 'h3-js';
 
+export type H3data = {
+  name: string,
+  hexagons: string[],
+};
+
+export const testFunc = () => {
+}
 export const rotationEvent = d3.dispatch('speedChange');
 
-export function updateRotationSpeed(newSpeed: number) {
+export const updateRotationSpeed = (newSpeed: number): void => {
   rotationEvent.call('speedChange', {}, newSpeed);
+}
+
+export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => {
+  const hexCountries = geoJSONfeatures.map((country: GeoJSONFeature) => {
+    return {
+      name: country.properties.NAME,
+      hexagons: h3.polyfill(country.geometry.coordinates, res)
+    };
+  });
+
+  return {
+    type: 'FeatureCollection',
+    features: hexCountries.flatMap(country =>
+      country.hexagons.map(hex => ({
+        type: 'Feature',
+        geometry: { type: 'Polygon', coordinates: [h3.h3ToGeoBoundary(hex, true)] },
+        properties: { country: country.name }
+      }))
+    )
+  };
 }
 
 export const updateGlobe = (
@@ -38,30 +67,34 @@ export const updateGlobe = (
   // Globe background (ocean)
   g.append('circle')
     .attr('r', radius)
-    .attr('fill', '#3a7e99')
-  d3.json('https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_land.geojson')
-    .then((world: any) => {
-      // Draw landmasses
+    .attr('fill', '#71717A')
+  // d3.json('https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_land.geojson')
+  const countriesUrl = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
+
+  d3.json(countriesUrl)
+    .then((geojson: any) => {
+      // const land = g.selectAll('path')
+      //   .data(geojson.features)
+      //   .enter()
+      //   .append('path')
+      //   .attr('d', path)
+      //   .attr('fill', '#1A1A1A')
+      //   .attr('stroke', 'white')
+      //   .attr('stroke-width', '.1px');
+
+      const hexGeoJSON = getH3GeoJSON(geojson.features, 1);
+      // console.log(hexGeoJSON);
+
       const land = g.selectAll('path')
-        .data(world.features)
+        .data(hexGeoJSON.features)
         .enter()
         .append('path')
         .attr('d', path)
-        .attr('fill', '#05fcb6')
-        .attr('stroke', '#043c42');
-      //
-      // Rotation state
-      // let lambda = 0; // Longitude
-      // let phi = 0;   // Latitude
-      // const timer = d3.timer(() => {
-      //   lambda += 0.1 + controlsState.rotation; // Spin speed
-      //   projection.rotate([lambda, phi]);
-      //   land.attr('d', path);
-      //   g.select('circle').attr('d', path);
-      // });
-      //
-      //////
+        .style('stroke', '#000')
+        .style('stroke-width', 0.5)
+        .style('fill', 'none');
 
+      // Rotation state
       let lambda = 0, phi = 0, timer: d3.Timer | null = null;
       const updateRotation = (newSpeed: number) => {
         if (timer) timer.stop();
@@ -76,6 +109,7 @@ export const updateGlobe = (
       rotationEvent.on('speedChange', (newSpeed: number) => updateRotation(newSpeed));
       updateRotation(controlsState.rotation); //init rotation
 
+      // Drag Zoom
       const drag = d3.drag<SVGSVGElement, unknown>()
         .on('drag', (event) => {
           const sensitivity = 0.25;
@@ -92,11 +126,13 @@ export const updateGlobe = (
           land.attr('d', path);
           g.select('circle').attr('r', event.transform.k);
         });
+      // Capture Click for map interaction
       svg.on('click', (event) => {
         const [x, y] = d3.pointer(event, svg.node());
         const coords = 'invert' in projection ? projection.invert!([x - width / 2, y - height / 2]) : [];
         if (coords) onGlobeClick(coords, [x, y], svgRef);
       });
+
       // Apply drag and zoom to SVG
       svg.call(drag).call(zoom);
       // Initial zoom reset
@@ -166,7 +202,7 @@ export const handleGlobeClick = (
       ...prev,
       latitude: coords[1],
       longitude: coords[0],
-      zoom: 9,
+      zoom: 7,
       transitionDuration: 2000,
       transitionInterpolator: new FlyToInterpolator(),
     })
