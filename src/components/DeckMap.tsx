@@ -1,6 +1,6 @@
 import DeckGL, { Layer, MapViewState } from 'deck.gl';
 import { Map, FullscreenControl } from 'react-map-gl/maplibre';
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 
 export const DeckMap = memo(({ view_state, layers }:
   {
@@ -36,3 +36,5 @@ export const DeckMap = memo(({ view_state, layers }:
   )
 }
 )
+
+export default DeckMap;
