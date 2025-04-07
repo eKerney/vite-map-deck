@@ -4,6 +4,12 @@ import { geoOrthographic, geoPath } from 'd3-geo';
 import { FlyToInterpolator, MapViewState } from "deck.gl";
 import { ControlProps } from "../components/BaseLayout";
 
+export const rotationEvent = d3.dispatch('speedChange');
+
+export function updateRotationSpeed(newSpeed: number) {
+  rotationEvent.call('speedChange', {}, newSpeed);
+}
+
 export const updateGlobe = (
   svgRef: RefObject<SVGSVGElement | null>,
   width: number,
@@ -45,29 +51,31 @@ export const updateGlobe = (
         .attr('stroke', '#043c42');
       //
       // Rotation state
-      let lambda = 0; // Longitude
-      let phi = 0;   // Latitude
-      d3.timer(() => {
-        lambda += controlsState.rotation; // Spin speed
-        projection.rotate([lambda, phi]);
-        land.attr('d', path);
-        g.select('circle').attr('d', path);
-        console.log('rotation')
-      });
-      // working here 
-      // useEffect(() => {
-      //   if (timerRef.current) {
-      //     timerRef.current.stop(); // Stop the old timer
-      //     timerRef.current = d3.timer(() => {
-      //       const lambda = timerRef.current ? timerRef.current.time() * controlsState.rotation * 0.001 : 0;
-      //       projection.rotate([lambda, 0]);
-      //       land.attr('d', path);
-      //       g.select('circle').attr('d', path);
-      //     });
-      //   }
-      // }, [controlsState.rotation]);
-
+      // let lambda = 0; // Longitude
+      // let phi = 0;   // Latitude
+      // const timer = d3.timer(() => {
+      //   lambda += 0.1 + controlsState.rotation; // Spin speed
+      //   projection.rotate([lambda, phi]);
+      //   land.attr('d', path);
+      //   g.select('circle').attr('d', path);
+      // });
       //
+      //////
+
+      let lambda = 0, phi = 0, timer: d3.Timer | null = null;
+      const updateRotation = (newSpeed: number) => {
+        if (timer) timer.stop();
+        // speed = newSpeed;
+        timer = d3.timer(() => {
+          lambda += newSpeed;
+          projection.rotate([lambda, phi]);
+          land.attr('d', path);
+          g.select('circle').attr('d', path);
+        });
+      };
+      rotationEvent.on('speedChange', (newSpeed: number) => updateRotation(newSpeed));
+      updateRotation(controlsState.rotation); //init rotation
+
       const drag = d3.drag<SVGSVGElement, unknown>()
         .on('drag', (event) => {
           const sensitivity = 0.25;
