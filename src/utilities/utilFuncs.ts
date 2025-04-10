@@ -11,62 +11,7 @@ export type H3data = {
   hexagons: string[],
 };
 
-export const testFunc = (countries) => {
-  const boundary = [
-    [163.04087210465863, 64.01659592046677],
-    [163.34704729720406, 59.53641309763331],
-    [170.66738099421357, 57.35909783156441],
-    [178.57998532973056, 59.03217199475963],
-    [-179.11117538442045, 63.29242332756059],
-    [172.86137139869209, 66.19292316051032],
-    [163.04087210465863, 64.01659592046677]
-  ]; // [lon, lat]
-
-  const coords = boundary.map(([lon, lat]) => [lon, lat]); // Already in [lon, lat]
-
-  let crossesAntimeridian = false;
-  for (let i = 0; i < coords.length - 1; i++) {
-    const lon1 = coords[i][0];
-    const lon2 = coords[i + 1][0];
-    const diff = Math.abs(lon1 - lon2);
-    // console.log(`Longitude difference [${i} to ${i + 1}]: ${lon1} to ${lon2} = ${diff}`);
-    if (diff > 180) {
-      crossesAntimeridian = true;
-      break;
-    }
-  }
-  // console.log('Crosses antimeridian:', crossesAntimeridian);
-  ////
-  //
-
-  const normalized = coords.map(([lon, lat]) => [lon > 180 ? lon - 360 : lon, lat]);
-  /// split into left and right
-  const left = [], right = [];
-  for (let i = 0; i < normalized.length; i++) {
-    const [lon, lat] = normalized[i];
-    if (lon <= 0) left.push([lon, lat]);
-    else right.push([lon, lat]);
-  }
-  ///add intersection points 
-  for (let i = 0; i < normalized.length - 1; i++) {
-    const [lon1, lat1] = normalized[i];
-    const [lon2, lat2] = normalized[i + 1];
-    if (Math.abs(lon1 - lon2) > 180) {
-      const t = (180 - Math.abs(lon1)) / Math.abs(lon1 - lon2);
-      const latCross = lat1 + t * (lat2 - lat1);
-      if (lon1 < 0) {
-        left.push([-180, latCross]);
-        right.push([180, latCross]);
-      } else {
-        left.push([-180, latCross]);
-        right.push([180, latCross]);
-      }
-    }
-  }
-
-  return [left, right]
-    .filter(poly => poly.length > 2)
-    .map(poly => poly.map(([lon, lat]) => [lat, lon]));
+export const testFunc = () => {
 }
 
 export const rotationEvent = d3.dispatch('speedChange');
@@ -74,7 +19,6 @@ export const rotationEvent = d3.dispatch('speedChange');
 export const updateRotationSpeed = (newSpeed: number): void => {
   rotationEvent.call('speedChange', {}, newSpeed);
 }
-
 
 /////
 const splitAtAntimeridian = (boundary) => {
@@ -108,6 +52,9 @@ const splitAtAntimeridian = (boundary) => {
   if (!crossesAntimeridian) {
     return [coords];
     // return [coords.map(([lon, lat]) => [lat, lon])];
+  }
+  else {
+    return []
   }
 
   // Normalize longitudes to [-180, 180] for splitting
@@ -172,12 +119,13 @@ export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
       return { name, hexagons: [] };
     }
   });
+  console.log(hexCountries)
 
   return {
     type: 'FeatureCollection',
     features: hexCountries.flatMap(country =>
       country.hexagons.flatMap(hex => {
-        const boundaries = splitAtAntimeridian(h3.h3ToGeoBoundary(hex, true), country.name);
+        const boundaries = splitAtAntimeridian(h3.h3ToGeoBoundary(hex, true).reverse());
         return boundaries.map(boundary => ({
           type: 'Feature',
           geometry: {
@@ -221,9 +169,11 @@ export const updateGlobe = (
   const path = geoPath().projection(projection);
 
   // Globe background (ocean)
-  g.append('circle')
+  let globe = g.append('circle')
+    .datum({ type: "Sphere" })
     .attr('r', radius)
     .attr('fill', '#71717A')
+    .attr('fill-opacity', '0.3')
   // d3.json('https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_land.geojson')
   const countriesUrl = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
 
@@ -239,31 +189,30 @@ export const updateGlobe = (
       //   .attr('stroke-width', '.1px');
       // console.log('TEST: ', testFunc());
       // Clear previous content
-      svg.selectAll('path').remove();
-      const hexGeoJSON = getH3GeoJSON(geojson.features, 2);
+      const hexGeoJSON = getH3GeoJSON(geojson.features, 1);
       console.log(hexGeoJSON);
 
       const land = g.selectAll('.hexagon')
         .data(hexGeoJSON.features)
-        .enter()
-        .append('path')
+        .enter().append('path')
         .attr('class', 'hexagon')
         .attr('d', path)
-        .style('stroke', '#000')
-        .style('stroke-width', 1)
-        .style('fill', 'none')
-      // .style('fill-opacity', '0.0001')
+        .attr('fill', '#1A1A1A')
+        .attr('stroke', 'white')
+        .attr('stroke-width', '.1px');
 
       /// WORKING IT   
       land
         .on('mouseover', function(event, d) {
-          d3.select(this).style('fill-opacity', 0.8);
+          d3.select(this)
+            .style('fill-opacity', 0.5)
+            .attr('fill', '#fff') // Ensure visibility
           svg.append('text')
             .attr('class', 'tooltip')
             .attr('x', event.offsetX + 10) // Position near mouse
             .attr('y', event.offsetY - 10)
-            // .attr('fill', '#fff') // Ensure visibility
-            .attr('font-size', '12px')
+            .attr('fill', '#fff') // Ensure visibility
+            .attr('font-size', '16px')
             .attr('pointer-events', 'none') // Prevent interference with mouse events
             .text(d.properties.country || 'Unknown');
         })
@@ -273,7 +222,9 @@ export const updateGlobe = (
             .attr('y', event.offsetY - 10);
         })
         .on('mouseout', function() {
-          d3.select(this).style('fill-opacity', 1.0);
+          d3.select(this)
+            .style('fill-opacity', 1.0)
+            .attr('fill', '#1A1A1A');
           svg.select('.tooltip').remove();
         });
       //////
