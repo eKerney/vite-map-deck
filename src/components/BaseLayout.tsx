@@ -22,7 +22,7 @@ export const BaseLayout = () => {
     updateRotationSpeed(controlsState.rotation); // Update speed on change
   }, [controlsState.rotation]); // Watch for changes
 
-  useEffect(() => console.log(controlsState), [controlsState])
+  // useEffect(() => console.log(controlsState), [controlsState])
 
   const globeClickCallback = (
     coords: [number, number] | never[],
@@ -35,7 +35,8 @@ export const BaseLayout = () => {
       <div className="grid grid-cols-12 grid-rows-6 relativ gap-0 h-screen overflow-visible bg-elevation-0   ">
 
         <div className="w-screen col-span-12 justify-center items-center " >
-          {<D3Globe onGlobeClick={globeClickCallback} controlsState={controlsState} />}
+
+          <D3Globe onGlobeClick={globeClickCallback} controlsState={controlsState} />
         </div>
 
         <div className="absolute top-4 right-4 w-80 p-4  z-50">

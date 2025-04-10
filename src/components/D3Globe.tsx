@@ -18,8 +18,8 @@ export const D3Globe = ({ onGlobeClick, controlsState }: D3PanelProps) => {
   useEffect(() => {
     if (!svgRef.current) return;
     updateGlobe(svgRef, width, height, onGlobeClick, controlsState);
-    window.addEventListener('resize', updateGlobe(svgRef, width, height, onGlobeClick, controlsState));
-    return () => window.removeEventListener('resize', updateGlobe(svgRef, width, height, onGlobeClick, controlsState));
+    // window.addEventListener('resize', updateGlobe(svgRef, width, height, onGlobeClick, controlsState));
+    // return () => window.removeEventListener('resize', updateGlobe(svgRef, width, height, onGlobeClick, controlsState));
   }, [width, height]);
 
   return (

@@ -20,46 +20,22 @@ export const updateRotationSpeed = (newSpeed: number): void => {
   rotationEvent.call('speedChange', {}, newSpeed);
 }
 
-/////
-const splitAtAntimeridian = (boundary) => {
-  // H3 returns [lat, lon], but we need [lon, lat] for internal processing
-  const coords = boundary;
-  // const coords = boundary.map(([lat, lon]) => [lon, lat]); // Flip to [lon, lat]
-  // Check for antimeridian crossing using longitudes (first element in [lon, lat])
+const splitAtAntimeridian = (coords: number[][]) => {
   let crossesAntimeridian = false;
-  for (let i = 0; i < coords.length - 1; i++) {
-    const lon1 = coords[i][0]; // lon is first in [lon, lat]
-    const lon2 = coords[i + 1][0];
-    const diff = Math.abs(lon1 - lon2);
-    // console.log(`Longitude difference [${i} to ${i + 1}]: ${lon1} to ${lon2} = ${diff}`);
-    if (diff > 180) {
-      crossesAntimeridian = true;
-      break;
-    } else if (diff > 90) {
-      // console.warn(`Unexpectedly large difference (${diff}) for longitudes ${lon1} to ${lon2}. Are we sure these are longitudes?`);
-    }
-  }
+  // subtract next lon from current lon
+  coords.every((d, i) => {
+    crossesAntimeridian = Math.abs(d[0] - coords[i + i == coords.length ? 0 : 1][0]) > 180 ? true : false;
+    if (crossesAntimeridian) return false;
+    return true;
+  })
 
-  // Log details for hexagons near the antimeridian
-  // const longitudes = coords.map(([lon, lat]) => lon);
-  // if (longitudes.some(lon => Math.abs(lon) > 170)) {
-  // console.log('Hexagon near antimeridian:', { longitudes, crossesAntimeridian });
-  // } else {
-  // console.log('No longitudes near antimeridian (±170°):', longitudes);
-  // }
-
-  // If no crossing, convert back to [lat, lon] and return
-  if (!crossesAntimeridian) {
-    return [coords];
-    // return [coords.map(([lon, lat]) => [lat, lon])];
-  }
-  else {
-    return []
-  }
+  if (!crossesAntimeridian) return [coords];
+  else return []
+  // skipping anti meridian polygons
+  // TODO: Need to work on proper splitting process
 
   // Normalize longitudes to [-180, 180] for splitting
   const normalized = coords.map(([lon, lat]) => [lon > 180 ? lon - 360 : lon, lat]);
-
   // Split the polygon by traversing the path
   const left = [], right = [];
   // Use the longitude of the first point to decide the starting polygon
@@ -90,10 +66,8 @@ const splitAtAntimeridian = (boundary) => {
   // Filter out invalid polygons and convert back to [lat, lon]
   return [left, right]
     .filter(poly => poly.length > 2)
-  // .map(poly => poly.map(([lon, lat]) => [lat, lon]));
+    .map(poly => poly.map(([lon, lat]) => [lat, lon]));
 }
-
-//
 
 export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => {
   const hexCountries = geoJSONfeatures.map(country => {
@@ -104,22 +78,16 @@ export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
     }
 
     let hexagons: string[] = [];
+
     try {
       if (geometry.type === 'MultiPolygon') {
-        geometry.coordinates.forEach((polygonCoords, index) => {
-          const polyHexagons = h3.polyfill(polygonCoords, res, true);
-          hexagons = hexagons.concat(polyHexagons);
-        });
-      } else {
-        hexagons = h3.polyfill(geometry.coordinates, res, true);
-      }
-      hexagons = [...new Set(hexagons)];
-      return { name, hexagons };
+        geometry.coordinates.forEach((polygonCoords) => hexagons = hexagons.concat(h3.polyfill(polygonCoords, res, true)));
+      } else hexagons = h3.polyfill(geometry.coordinates, res, true);
+      return { name, hexagons: [...new Set(hexagons)] };
     } catch (error) {
       return { name, hexagons: [] };
     }
   });
-  console.log(hexCountries)
 
   return {
     type: 'FeatureCollection',
