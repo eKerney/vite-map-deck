@@ -11,13 +11,8 @@ export interface PanelProps {
 
 export interface ControlProps { rotation: number };
 
-export const controls: ControlItem[] = [[
-  'rotation',
-  controlsState.rotation,
-  (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, rotation: parseFloat(e.target.value) })
-]];
 
-export type ControlItem = [string, number, (e: React.ChangeEvent<HTMLInputElement>) => void];
+export type ControlItem = [string, number, number, number, number, string[], (e: React.ChangeEvent<HTMLInputElement>) => void];
 
 export interface D3PanelProps {
   onGlobeClick: (coords: [number, number] | never[],

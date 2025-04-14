@@ -14,7 +14,7 @@ export const D3Globe = ({ onGlobeClick, controlsState }: D3PanelProps) => {
 
   useEffect(() => {
     if (!svgRef.current) return;
-    drawGlobe(svgRef, width, height, onGlobeClick, controlsState, data ? data : { features: [] });
+    data && drawGlobe({ width, height, svgRef, onGlobeClick, controlsState, data })
   }, [width, height, data]);
 
   return (

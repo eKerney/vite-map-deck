@@ -2,8 +2,8 @@ import { Dispatch, RefObject, SetStateAction } from "react";
 import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
 import { FlyToInterpolator, MapViewState } from "deck.gl";
-import { ControlProps } from "../components/BaseLayout";
 import { getH3GeoJSON } from "./utilFuncs";
+import { D3Features, GlobeContexts, GlobeState, SetupGraphics, WidthHeight } from "./types";
 
 export const rotationEvent = d3.dispatch('speedChange');
 
@@ -247,56 +247,18 @@ export const drawLines = (
       .ease(d3.easeQuadOut)
       .attr("stroke-dashoffset", 0) // Reveal
   });
-
 };
 
-// export type WidthHeight = {
-//   width: number,
-//   height: number,
-// }
-//
-// export interface SetupGraphics {
-//   radius: number,
-//   svg: d3.Selection<SVGSVGElement | null, unknown, null, undefined>,
-// };
-//
-// export interface GlobeContexts {
-//   svgRef: RefObject<SVGSVGElement | null>,
-//   onGlobeClick: (coords: [number, number] | never[],
-//     screenPos: [number, number],
-//     svgRef: RefObject<SVGSVGElement | null>,
-//   ) => void,
-//   controlsState: ControlProps,
-// };
-//
-// export interface GlobeState {
-//   g: SVGGElement | unknown | null | undefined,
-//   path: d3.GeoPath<any, d3.GeoPermissibleObjects>,
-//   projection: d3.GeoProjection,
-// };
-// globeInteractions(svgRef, width, height, onGlobeClick, controlsState, radius, svg, land, projection, path, g)
-// dataInteractions(land, svg);
-// const { g, path, projection } = globeSetup(width, height, radius, svg);
-
-export const drawGlobe = (
-  svgRef: RefObject<SVGSVGElement | null>,
-  width: number,
-  height: number,
-  onGlobeClick: (coords: [number, number] | never[],
-    screenPos: [number, number],
-    svgRef: RefObject<SVGSVGElement | null>,
-  ) => void,
-  controlsState: ControlProps,
-  data: any
-) => {
+export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, data = { features: [] } }:
+  WidthHeight & GlobeContexts & any) => {
   const radius = Math.min(width, height) / 3;
   const svg = d3.select(svgRef.current)
     .attr('width', width)
     .attr('height', height);
 
-  const { g, path, projection } = globeSetup(width, height, radius, svg);
+  const { g, path, projection } = globeSetup({ width, height, radius, svg });
 
-  const land = g.selectAll('path')
+  const features = g.selectAll('path')
     .data(data.features)
     .enter()
     .append('path')
@@ -305,8 +267,8 @@ export const drawGlobe = (
     .attr('stroke', 'white')
     .attr('stroke-width', '.1px');
 
-  dataInteractions(land, svg);
-  globeInteractions(svgRef, width, height, onGlobeClick, controlsState, radius, svg, land, projection, path, g)
+  dataInteractions(features, svg);
+  globeInteractions({ width, height, svgRef, onGlobeClick, controlsState, radius, svg, g, projection, path, features })
 
   // const hexGeoJSON = getH3GeoJSON(data.features, 1);
   //
@@ -320,22 +282,8 @@ export const drawGlobe = (
   //   .attr('stroke-width', '.1px');
 };
 
-export const globeInteractions = (
-  svgRef: RefObject<SVGSVGElement | null>,
-  width: number,
-  height: number,
-  onGlobeClick: (coords: [number, number] | never[],
-    screenPos: [number, number],
-    svgRef: RefObject<SVGSVGElement | null>,
-  ) => void,
-  controlsState: ControlProps,
-  radius: number,
-  svg: d3.Selection<SVGSVGElement | null, unknown, null, undefined>,
-  features: d3.Selection<SVGPathElement, unknown, SVGGElement, unknown>,
-  projection: d3.GeoProjection,
-  path: d3.GeoPath<any, d3.GeoPermissibleObjects>,
-  g: SVGGElement | unknown | null | undefined,
-) => {
+export const globeInteractions = ({ width, height, svgRef, onGlobeClick, controlsState, radius, svg, g, projection, path, features }:
+  WidthHeight & GlobeContexts & SetupGraphics & GlobeState & D3Features) => {
 
   // Rotation state
   let lambda = 0, phi = 0, timer: d3.Timer | null = null;
@@ -413,13 +361,7 @@ export const dataInteractions = (
     });
 }
 
-
-export const globeSetup = (
-  width: number,
-  height: number,
-  radius: number,
-  svg: d3.Selection<SVGSVGElement | null, unknown, null, undefined>,
-): GlobeState => {
+export const globeSetup = ({ width, height, radius, svg }: WidthHeight & SetupGraphics): GlobeState => {
   // Clear previous content
   svg.selectAll('*').remove();
   // Center the globe
