@@ -11,6 +11,7 @@ export const useFetchData = <T>(url: string): FetchState<T> => {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => console.log('fetch', data, isLoading, error), [data, isLoading, error])
 
   const getData = () => {
     setIsLoading(true);
