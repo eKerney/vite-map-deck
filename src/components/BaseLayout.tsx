@@ -2,6 +2,7 @@ import { MapViewState } from "deck.gl";
 import { DeckMap, D3Globe, Controls } from "../components"
 import { RefObject, useEffect, useState } from "react";
 import { handleGlobeClick, updateRotationSpeed } from "../utilities/globeFuncs";
+import { ControlItem, ControlProps } from "./types";
 
 export const BaseLayout = () => {
   const [viewState, setViewState] = useState<MapViewState>({ longitude: 0, latitude: 0, zoom: 2, pitch: 0, bearing: 0 });
@@ -12,6 +13,12 @@ export const BaseLayout = () => {
   useEffect(() => {
     updateRotationSpeed(controlsState.rotation); // Update speed on change
   }, [controlsState.rotation]); // Watch for changes
+
+  const controls: ControlItem[] = [[
+    'rotation',
+    controlsState.rotation,
+    (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, rotation: parseFloat(e.target.value) })
+  ]];
 
   // useEffect(() => console.log(controlsState), [controlsState])
 
