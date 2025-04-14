@@ -142,25 +142,24 @@ export const updateGlobe = (
     .attr('r', radius)
     .attr('fill', '#71717A')
     .attr('fill-opacity', '0.3')
-  // d3.json('https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_land.geojson')
   const countriesUrl = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
 
   d3.json(countriesUrl)
     .then((geojson: any) => {
-      // const land = g.selectAll('path')
-      //   .data(geojson.features)
-      //   .enter()
-      //   .append('path')
-      //   .attr('d', path)
-      //   .attr('fill', '#1A1A1A')
-      //   .attr('stroke', 'white')
-      //   .attr('stroke-width', '.1px');
-      // console.log('TEST: ', testFunc());
+      const land = g.selectAll('path')
+        .data(geojson.features)
+        .enter()
+        .append('path')
+        .attr('d', path)
+        .attr('fill', '#1A1A1A')
+        .attr('stroke', 'white')
+        .attr('stroke-width', '.1px');
+
       // Clear previous content
       const hexGeoJSON = getH3GeoJSON(geojson.features, 1);
-      console.log(hexGeoJSON);
+      // console.log(hexGeoJSON);
 
-      const land = g.selectAll('.hexagon')
+      const hex = g.selectAll('.hexagon')
         .data(hexGeoJSON.features)
         .enter().append('path')
         .attr('class', 'hexagon')
@@ -182,7 +181,7 @@ export const updateGlobe = (
             .attr('fill', '#fff') // Ensure visibility
             .attr('font-size', '16px')
             .attr('pointer-events', 'none') // Prevent interference with mouse events
-            .text(d.properties.country || 'Unknown');
+            .text(d.properties.country || d.properties.name);
         })
         .on('mousemove', function(event) {
           svg.select('.tooltip')
