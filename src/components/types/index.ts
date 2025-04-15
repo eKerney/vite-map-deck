@@ -2,17 +2,20 @@
 // COMPONENT TYPES //
 /////////////////////////
 
-import { ReactNode } from "react";
+import { ReactNode, RefObject } from "react";
 
 export interface PanelProps {
-  items: controlItem[];
-  renderItems: (item: controlItem, index: number) => ReactNode;
+  items: ControlItem[];
+  renderItems: (item: ControlItem, index: number) => ReactNode;
 };
 
-export interface ControlProps { rotation: number };
+export interface ControlProps {
+  rotation: number,
+  land: 1 | 2,
+  res: 1 | 2 | 3,
+};
 
-
-export type ControlItem = [string, number, number, number, number, string[], (e: React.ChangeEvent<HTMLInputElement>) => void];
+export type ControlItem = [string, number, number, number, number, string[] | number[], (e: React.ChangeEvent<HTMLInputElement>) => void];
 
 export interface D3PanelProps {
   onGlobeClick: (coords: [number, number] | never[],

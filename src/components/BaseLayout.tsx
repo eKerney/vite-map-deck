@@ -6,23 +6,25 @@ import { ControlItem, ControlProps } from "./types";
 
 export const BaseLayout = () => {
   const [viewState, setViewState] = useState<MapViewState>({ longitude: 0, latitude: 0, zoom: 2, pitch: 0, bearing: 0 });
-  const [controlsState, setControlsState] = useState<ControlProps>({ rotation: .10 });
+  const [controlsState, setControlsState] = useState<ControlProps>({ rotation: .10, land: 1, res: 1 });
   const mapContStyle = "col-span-4 row-span-4 relative flex mt-8 -ml-24 opacity-0 rounded-lg shadow-2xl [border:0px_solid_transparent] bg-clip-padding [background-image:linear-gradient(to_right,#1A1A1A,#1A1A1A),linear-gradient(to_right,#5A67D8,#34C759)] border-custom-blue shadow-custom-blue";
-  const nums = ['1', '2', '3', '4', '5'], pips = ['|', '|', '|', '|', '|',], rang = ['slow', '', '', '', 'fast',], land = ['land', 'hex'];
 
   useEffect(() => {
-    updateRotationSpeed(controlsState.rotation); // Update speed on change
-  }, [controlsState.rotation]); // Watch for changes
+    updateRotationSpeed(controlsState.rotation);
+  }, [controlsState.rotation]);
 
   const controls: ControlItem[] = [[
-    'rotation', .05, .25, .05, controlsState.rotation, ['slow', '', '', '', 'fast'],
+    '', .05, .25, .05, controlsState.rotation, ['slow', '', '', '', 'fast'],
     (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, rotation: parseFloat(e.target.value) })],
   [
-    'land', 1, 2, 1, 1, ['land', 'hex'],
-    (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, rotation: parseFloat(e.target.value) })],
+    '', 1, 2, 1, controlsState.land, ['land', 'hex'],
+    (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, land: parseInt(e.target.value) })],
+  [
+    'res', 1, 3, 1, controlsState.res, [1, 2, 3],
+    (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, res: parseInt(e.target.value) })],
   ];
 
-  // useEffect(() => console.log(controlsState), [controlsState])
+  useEffect(() => console.log('bnaser', controlsState), [controlsState])
 
   const globeClickCallback = (
     coords: [number, number] | never[],

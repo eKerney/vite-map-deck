@@ -249,8 +249,9 @@ export const drawLines = (
   });
 };
 
-export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, data = { features: [] } }:
+export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, data = { features: [] }, hexGeoJSON = { features: [] } }:
   WidthHeight & GlobeContexts & any) => {
+  console.log('drawGlobe', data)
   const radius = Math.min(width, height) / 3;
   const svg = d3.select(svgRef.current)
     .attr('width', width)
@@ -258,10 +259,11 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
 
   const { g, path, projection } = globeSetup({ width, height, radius, svg });
 
-  const features = g.selectAll('path')
-    .data(data.features)
+  const features = g.selectAll('.land')
+    .data(controlsState.land === 2 ? hexGeoJSON.features : data.features)
     .enter()
     .append('path')
+    .attr('class', 'land')
     .attr('d', path)
     .attr('fill', '#1A1A1A')
     .attr('stroke', 'white')
