@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import useWindowSize from '../hooks/useWindowSize';
 import { useFetchData } from '../hooks/useFetchData';
 import { drawGlobe } from '../utilities/globeFuncs';
 import { getH3GeoJSON } from '../utilities/utilFuncs';
 import { D3PanelProps } from './types';
+import * as d3 from 'd3';
 
 
 export const D3Globe = ({ onGlobeClick, controlsState }: D3PanelProps) => {
@@ -18,7 +19,15 @@ export const D3Globe = ({ onGlobeClick, controlsState }: D3PanelProps) => {
     if (!svgRef.current) return;
     const hexGeoJSON = getH3GeoJSON(data ? data.features : [], controlsState.res);
     data && drawGlobe({ width, height, svgRef, onGlobeClick, controlsState, data, hexGeoJSON })
-    console.log('hex', hexGeoJSON, data, controlsState)
+    // console.log('hex', hexGeoJSON, data, controlsState)
+    // cleanup func
+    return () => {
+      if (svgRef.current) {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll('*').remove();
+        svg.on('click', null);
+      }
+    }
   }, [width, height, data, controlsState.land, controlsState.res]);
 
   return (

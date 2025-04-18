@@ -5,142 +5,6 @@ import { FlyToInterpolator, MapViewState } from "deck.gl";
 import { getH3GeoJSON } from "./utilFuncs";
 import { D3Features, GlobeContexts, GlobeState, SetupGraphics, WidthHeight } from "./types";
 
-export const rotationEvent = d3.dispatch('speedChange');
-
-export const updateRotationSpeed = (newSpeed: number): void => {
-  rotationEvent.call('speedChange', {}, newSpeed);
-}
-
-// export const drawGlobe = (
-//   svgRef: RefObject<SVGSVGElement | null>,
-//   width: number,
-//   height: number,
-//   onGlobeClick: (coords: [number, number] | never[],
-//     screenPos: [number, number],
-//     svgRef: RefObject<SVGSVGElement | null>,
-//   ) => void,
-//   controlsState: ControlProps,
-// ) => {
-//   const radius = Math.min(width, height) / 3;
-//   const svg = d3.select(svgRef.current)
-//     .attr('width', width)
-//     .attr('height', height);
-//
-//   // Clear previous content
-//   svg.selectAll('*').remove();
-//
-//   // Center the globe
-//   const g = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2})`);
-//
-//   // Orthographic projection
-//   const projection = geoOrthographic()
-//     .scale(radius)
-//     .translate([0, 0])
-//     .rotate([0, 0]); // Initial rotation [longitude, latitude]
-//   const path = geoPath().projection(projection);
-//
-//   // Globe background (ocean)
-//   let globe = g.append('circle')
-//     .datum({ type: "Sphere" })
-//     .attr('r', radius)
-//     .attr('fill', '#71717A')
-//     .attr('fill-opacity', '0.3')
-//   const countriesUrl = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
-//
-//   d3.json(countriesUrl)
-//     .then((geojson: any) => {
-//       const land = g.selectAll('path')
-//         .data(geojson.features)
-//         .enter()
-//         .append('path')
-//         .attr('d', path)
-//         .attr('fill', '#1A1A1A')
-//         .attr('stroke', 'white')
-//         .attr('stroke-width', '.1px');
-//
-//       // Clear previous content
-//       const hexGeoJSON = getH3GeoJSON(geojson.features, 1);
-//
-//       const hex = g.selectAll('.hexagon')
-//         .data(hexGeoJSON.features)
-//         .enter().append('path')
-//         .attr('class', 'hexagon')
-//         .attr('d', path)
-//         .attr('fill', '#1A1A1A')
-//         .attr('stroke', 'white')
-//         .attr('stroke-width', '.1px');
-//
-//       land
-//         .on('mouseover', function(event, d) {
-//           d3.select(this)
-//             .style('fill-opacity', 0.5)
-//             .attr('fill', '#fff') // Ensure visibility
-//           svg.append('text')
-//             .attr('class', 'tooltip')
-//             .attr('x', event.offsetX + 10) // Position near mouse
-//             .attr('y', event.offsetY - 10)
-//             .attr('fill', '#fff') // Ensure visibility
-//             .attr('font-size', '16px')
-//             .attr('pointer-events', 'none') // Prevent interference with mouse events
-//             .text(d.properties.country || d.properties.name);
-//         })
-//         .on('mousemove', function(event) {
-//           svg.select('.tooltip')
-//             .attr('x', event.offsetX + 10)
-//             .attr('y', event.offsetY - 10);
-//         })
-//         .on('mouseout', function() {
-//           d3.select(this)
-//             .style('fill-opacity', 1.0)
-//             .attr('fill', '#1A1A1A');
-//           svg.select('.tooltip').remove();
-//         });
-//
-//       // Rotation state
-//       let lambda = 0, phi = 0, timer: d3.Timer | null = null;
-//       const updateRotation = (newSpeed: number) => {
-//         if (timer) timer.stop();
-//         timer = d3.timer(() => {
-//           lambda += newSpeed;
-//           projection.rotate([lambda, phi]);
-//           land.attr('d', path);
-//           g.select('circle').attr('d', path);
-//         });
-//       };
-//       rotationEvent.on('speedChange', (newSpeed: number) => updateRotation(newSpeed));
-//       updateRotation(controlsState.rotation); //init rotation
-//
-//       // Drag Zoom
-//       const drag = d3.drag<SVGSVGElement, unknown>()
-//         .on('drag', (event) => {
-//           const sensitivity = 0.25;
-//           lambda += event.dx * sensitivity;
-//           phi -= event.dy * sensitivity;
-//           projection.rotate([lambda, phi]);
-//           land.attr('d', path);
-//           g.select('circle').attr('d', path);
-//         });
-//       const zoom = d3.zoom<SVGSVGElement, unknown>()
-//         .scaleExtent([radius - 20, radius * 3]) // Min/max zoom levels
-//         .on('zoom', (event) => {
-//           projection.scale(event.transform.k);
-//           land.attr('d', path);
-//           g.select('circle').attr('r', event.transform.k);
-//         });
-//       // Capture Click for map interaction
-//       svg.on('click', (event) => {
-//         const [x, y] = d3.pointer(event, svg.node());
-//         const coords = 'invert' in projection ? projection.invert!([x - width / 2, y - height / 2]) : [];
-//         if (coords) onGlobeClick(coords, [x, y], svgRef);
-//       });
-//
-//       // Apply drag and zoom to SVG
-//       svg.call(drag).call(zoom);
-//       // Initial zoom reset
-//       svg.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(radius - 10));
-//     })
-//     .catch(error => console.error('Error loading GeoJSON:', error));
-// };
 
 export const handleGlobeClick = (
   coords: [number, number] | never[],
@@ -251,11 +115,11 @@ export const drawLines = (
 
 export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, data = { features: [] }, hexGeoJSON = { features: [] } }:
   WidthHeight & GlobeContexts & any) => {
-  console.log('drawGlobe', data)
-  const radius = Math.min(width, height) / 3;
+  const radius = Math.min(width, height) / 2.4;
   const svg = d3.select(svgRef.current)
     .attr('width', width)
     .attr('height', height);
+  svg.selectAll('*').remove();
 
   const { g, path, projection } = globeSetup({ width, height, radius, svg });
 
@@ -266,26 +130,32 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     .attr('class', 'land')
     .attr('d', path)
     .attr('fill', '#1A1A1A')
+    .attr('fill-opacity', '0.8')
     .attr('stroke', 'white')
     .attr('stroke-width', '.1px');
 
-  dataInteractions(features, svg);
-  globeInteractions({ width, height, svgRef, onGlobeClick, controlsState, radius, svg, g, projection, path, features })
+  const graticules = g.append('path')
+    .datum(d3.geoGraticule10())
+    .attr("d", path)
+    .attr("stroke", "rgba(255, 255, 255, 0.08)")
+    .attr('stroke-width', '0.3px')
+    .attr('fill', 'none')
 
-  // const hexGeoJSON = getH3GeoJSON(data.features, 1);
-  //
-  // const hex = g.selectAll('.hexagon')
-  //   .data(hexGeoJSON.features)
-  //   .enter().append('path')
-  //   .attr('class', 'hexagon')
-  //   .attr('d', path)
-  //   .attr('fill', '#1A1A1A')
-  //   .attr('stroke', 'white')
-  //   .attr('stroke-width', '.1px');
+  dataInteractions(features, svg);
+  globeInteractions({ width, height, svgRef, onGlobeClick, controlsState, radius, svg, g, projection, path, features, graticules })
+
 };
 
-export const globeInteractions = ({ width, height, svgRef, onGlobeClick, controlsState, radius, svg, g, projection, path, features }:
+export const rotationEvent = d3.dispatch('speedChange');
+
+export const updateRotationSpeed = (newSpeed: number): void => {
+  rotationEvent.call('speedChange', {}, newSpeed);
+}
+
+export const globeInteractions = ({ width, height, svgRef, onGlobeClick, controlsState, radius, svg, g, projection, path, features, graticules }:
   WidthHeight & GlobeContexts & SetupGraphics & GlobeState & D3Features) => {
+  // features.data([]).exit().remove(); // Clear data and remove unbound elements
+  features.on('click', null); // Remove click listeners
 
   // Rotation state
   let lambda = 0, phi = 0, timer: d3.Timer | null = null;
@@ -295,6 +165,7 @@ export const globeInteractions = ({ width, height, svgRef, onGlobeClick, control
       lambda += newSpeed;
       projection.rotate([lambda, phi]);
       features.attr('d', path);
+      graticules.attr('d', path);
       g.select('circle').attr('d', path);
     });
   };
@@ -335,9 +206,11 @@ export const dataInteractions = (
   features: d3.Selection<SVGPathElement, unknown, SVGGElement, unknown>,
   svg: d3.Selection<SVGSVGElement | null, unknown, null, undefined>,
 ) => {
+  features.on('click', null); // Remove click listeners
 
   features
     .on('mouseover', function(event, d) {
+      console.log(d)
       d3.select(this)
         .style('fill-opacity', 0.5)
         .attr('fill', '#fff') // Ensure visibility
@@ -348,7 +221,7 @@ export const dataInteractions = (
         .attr('fill', '#fff') // Ensure visibility
         .attr('font-size', '16px')
         .attr('pointer-events', 'none') // Prevent interference with mouse events
-        .text(d.properties.country || d.properties.name);
+        .text(d.properties.country || d.properties.NAME);
     })
     .on('mousemove', function(event) {
       svg.select('.tooltip')
@@ -380,8 +253,33 @@ export const globeSetup = ({ width, height, radius, svg }: WidthHeight & SetupGr
   g.append('circle')
     .datum({ type: "Sphere" })
     .attr('r', radius)
-    .attr('fill', '#71717A')
+    .attr('fill', '#333338')
+    // .attr('fill', '#71717A')
     .attr('fill-opacity', '0.3')
+  globeGradient({ width, height, radius, svg: g });
 
   return { g, path, projection };
+}
+
+export const globeGradient = ({ width, height, radius, svg }: WidthHeight & SetupGraphics) => {
+  var gradient = svg.append("defs").append("radialGradient")
+    .attr("id", "gradient")
+    .attr("cx", "75%")
+    .attr("cy", "25%");
+
+  gradient.append("stop")
+    .attr("offset", "5%")
+    .attr("stop-color", "#fffff0");
+
+  gradient.append("stop")
+    .attr("offset", "100%")
+    .attr("stop-color", "#333338");
+
+  var fill = svg.append("circle")
+    // .attr("cx", width / 2)
+    // .attr("cy", height / 2)
+    .attr("r", radius / 1.028)
+    .style("fill", "url(#gradient)")
+    .attr('fill-opacity', '0.16')
+    .attr('stroke', 'none')
 }
