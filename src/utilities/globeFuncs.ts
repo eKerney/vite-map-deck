@@ -2,7 +2,6 @@ import { Dispatch, RefObject, SetStateAction } from "react";
 import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
 import { FlyToInterpolator, MapViewState } from "deck.gl";
-import { getH3GeoJSON } from "./utilFuncs";
 import { D3Features, GlobeContexts, GlobeState, SetupGraphics, WidthHeight } from "./types";
 
 
@@ -101,12 +100,12 @@ export const drawLines = (
       .attr("fill", "none")
       .style('opacity', 0.3);
 
-    const totalLength = path.node().getTotalLength();
+    const totalLength = path.node()?.getTotalLength();
     path
       .attr("stroke-dasharray", totalLength)
       .attr("stroke-dashoffset", totalLength)
       .transition()
-      .duration(1600)
+      .duration(1000)
       .delay(i * 100)
       .ease(d3.easeQuadOut)
       .attr("stroke-dashoffset", 0) // Reveal
@@ -194,6 +193,7 @@ export const globeInteractions = ({ width, height, svgRef, onGlobeClick, control
     const [x, y] = d3.pointer(event, svg.node());
     const coords = 'invert' in projection ? projection.invert!([x - width / 2, y - height / 2]) : [];
     if (coords) onGlobeClick(coords, [x, y], svgRef);
+    console.log(x, y, coords);
   });
 
   // Apply drag and zoom to SVG
@@ -210,7 +210,6 @@ export const dataInteractions = (
 
   features
     .on('mouseover', function(event, d) {
-      console.log(d)
       d3.select(this)
         .style('fill-opacity', 0.5)
         .attr('fill', '#fff') // Ensure visibility
@@ -230,7 +229,7 @@ export const dataInteractions = (
     })
     .on('mouseout', function() {
       d3.select(this)
-        .style('fill-opacity', 1.0)
+        .style('fill-opacity', 0.8)
         .attr('fill', '#1A1A1A');
       svg.select('.tooltip').remove();
     });

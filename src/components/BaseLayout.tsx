@@ -24,7 +24,7 @@ export const BaseLayout = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, res: parseInt(e.target.value) })],
   ];
 
-  useEffect(() => console.log('bnaser', controlsState), [controlsState])
+  useEffect(() => console.log('controls', controlsState), [controlsState])
 
   const globeClickCallback = (
     coords: [number, number] | never[],
