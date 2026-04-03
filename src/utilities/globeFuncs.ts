@@ -2,7 +2,6 @@ import { Dispatch, RefObject, SetStateAction } from "react";
 import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
 import { FlyToInterpolator, MapViewState } from "deck.gl";
-import { getH3GeoJSON } from "./utilFuncs";
 import { D3Features, GlobeContexts, GlobeState, SetupGraphics, WidthHeight } from "./types";
 
 
@@ -132,7 +131,10 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     .attr('fill', '#1A1A1A')
     .attr('fill-opacity', '0.8')
     .attr('stroke', 'white')
-    .attr('stroke-width', '.1px');
+    .attr('stroke-width', '.1px')
+    .each(function() {
+      d3.select(this).datum().isHovered = true;
+    });
 
   const graticules = g.append('path')
     .datum(d3.geoGraticule10())
@@ -151,6 +153,21 @@ export const rotationEvent = d3.dispatch('speedChange');
 export const updateRotationSpeed = (newSpeed: number): void => {
   rotationEvent.call('speedChange', {}, newSpeed);
 }
+
+// working to move this outside of globeInteractions
+export const updateRotation = (controlsState, projection, features, graticules, g, path, newSpeed: number) => {
+  let lambda = 0, phi = 0, timer: d3.Timer | null = null;
+  if (timer) timer.stop();
+  timer = d3.timer(() => {
+    lambda += newSpeed;
+    projection.rotate([lambda, phi]);
+    features.attr('d', path);
+    graticules.attr('d', path);
+    g.select('circle').attr('d', path);
+  });
+  rotationEvent.on('speedChange', (newSpeed: number) => updateRotation(newSpeed));
+  updateRotation(controlsState.rotation); //init rotation
+};
 
 export const globeInteractions = ({ width, height, svgRef, onGlobeClick, controlsState, radius, svg, g, projection, path, features, graticules }:
   WidthHeight & GlobeContexts & SetupGraphics & GlobeState & D3Features) => {
@@ -208,30 +225,43 @@ export const dataInteractions = (
 ) => {
   features.on('click', null); // Remove click listeners
 
+
   features
     .on('mouseover', function(event, d) {
-      console.log(d)
-      d3.select(this)
-        .style('fill-opacity', 0.5)
-        .attr('fill', '#fff') // Ensure visibility
-      svg.append('text')
-        .attr('class', 'tooltip')
-        .attr('x', event.offsetX + 10) // Position near mouse
-        .attr('y', event.offsetY - 10)
-        .attr('fill', '#fff') // Ensure visibility
-        .attr('font-size', '16px')
-        .attr('pointer-events', 'none') // Prevent interference with mouse events
-        .text(d.properties.country || d.properties.NAME);
+      if (!d.isHovered) {
+        console.log(d.isHovered)
+        d.isHovered = true;
+        // rotationEvent.on('speedChange', (newSpeed: number) => updateRotation(newSpeed));
+        d3.select(this)
+          .raise() // Bring to front to avoid overlap
+          .style('fill-opacity', 0.5)
+          .attr('fill', '#fff')
+          .transition()
+          .duration(200)
+          .attr('transform', 'scale(1.1)'); // Scale up by 10%
+        svg.append('text')
+          .attr('class', 'tooltip')
+          .attr('x', event.offsetX + 10)
+          .attr('y', event.offsetY - 10)
+          .attr('fill', '#fff')
+          .attr('font-size', '16px')
+          .attr('pointer-events', 'none')
+          .text(d.properties.country || d.properties.NAME);
+      }
     })
     .on('mousemove', function(event) {
       svg.select('.tooltip')
         .attr('x', event.offsetX + 10)
         .attr('y', event.offsetY - 10);
     })
-    .on('mouseout', function() {
+    .on('mouseout', function(event, d) {
+      d.isHovered = false;
       d3.select(this)
-        .style('fill-opacity', 1.0)
-        .attr('fill', '#1A1A1A');
+        .style('fill-opacity', 0.8)
+        .attr('fill', '#1A1A1A')
+        .transition()
+        .duration(200)
+        .attr('transform', 'scale(1)');
       svg.select('.tooltip').remove();
     });
 }
@@ -256,13 +286,14 @@ export const globeSetup = ({ width, height, radius, svg }: WidthHeight & SetupGr
     .attr('fill', '#333338')
     // .attr('fill', '#71717A')
     .attr('fill-opacity', '0.3')
+
   globeGradient({ width, height, radius, svg: g });
 
   return { g, path, projection };
 }
 
 export const globeGradient = ({ width, height, radius, svg }: WidthHeight & SetupGraphics) => {
-  var gradient = svg.append("defs").append("radialGradient")
+  const gradient = svg.append("defs").append("radialGradient")
     .attr("id", "gradient")
     .attr("cx", "75%")
     .attr("cy", "25%");
@@ -275,11 +306,11 @@ export const globeGradient = ({ width, height, radius, svg }: WidthHeight & Setu
     .attr("offset", "100%")
     .attr("stop-color", "#333338");
 
-  var fill = svg.append("circle")
+  const fill = svg.append("circle")
     // .attr("cx", width / 2)
     // .attr("cy", height / 2)
     .attr("r", radius / 1.028)
     .style("fill", "url(#gradient)")
-    .attr('fill-opacity', '0.16')
+    .attr('fill-opacity', '0.12')
     .attr('stroke', 'none')
 }
