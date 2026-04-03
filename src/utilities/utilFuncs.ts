@@ -1,5 +1,6 @@
 import { GeoJSONFeature } from "maplibre-gl";
 import * as h3 from 'h3-js';
+import { cellToBoundary, u64ToHex, cellToChildren } from "a5-js";
 
 const splitAtAntimeridian = (coords: number[][]) => {
   let crossesAntimeridian = false;
@@ -86,6 +87,26 @@ export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
       })
     )
   };
+
+}
+
+export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => {
+  const cells = [];
+  const cellIds = cellToChildren(0n, 2);
+
+  // Generate boundary for each cell
+  for (let cellId of cellIds) {
+    const cellIdHex = u64ToHex(cellId);
+    const boundary = cellToBoundary(cellId);
+
+    cells.push({
+      type: "Feature",
+      geometry: { type: "Polygon", coordinates: [boundary] },
+      properties: { cellIdHex }
+    });
+  }
+
+  return { type: "FeatureCollection", features: cells };
 
 }
 

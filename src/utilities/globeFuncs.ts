@@ -112,7 +112,7 @@ export const drawLines = (
   });
 };
 
-export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, data = { features: [] }, hexGeoJSON = { features: [] } }:
+export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, data = { features: [] }, hexGeoJSON = { features: [] }, a5GeoJSON }:
   WidthHeight & GlobeContexts & any) => {
   const radius = Math.min(width, height) / 2.4;
   const svg = d3.select(svgRef.current)
@@ -121,9 +121,14 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
   svg.selectAll('*').remove();
 
   const { g, path, projection } = globeSetup({ width, height, radius, svg });
+  console.log('globe', a5GeoJSON)
 
   const features = g.selectAll('.land')
-    .data(controlsState.land === 2 ? hexGeoJSON.features : data.features)
+    .data(controlsState.land === 2
+      ? hexGeoJSON.features
+      : controlsState.land === 3
+        ? a5GeoJSON
+        : data.features)
     .enter()
     .append('path')
     .attr('class', 'land')
