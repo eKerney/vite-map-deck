@@ -38,7 +38,7 @@ export const handleGlobeClick = (
         .style('width', `${fWidth}px`)
         .style('height', `${fHeight}px`)
         .style('opacity', 0.5);
-      drawLines(screenPos, { w: fWidth, h: fHeight, l: fLeft, t: fTop }, svgRef);
+      // drawLines(screenPos, { w: fWidth, h: fHeight, l: fLeft, t: fTop }, svgRef);
     } else {
       mapPanel
         .style('position', 'absolute')
@@ -59,7 +59,7 @@ export const handleGlobeClick = (
         .style('width', `${fWidth}px`)
         .style('height', `${fHeight}px`)
         .style('opacity', 0.9);
-      drawLines(screenPos, { w: fWidth, h: fHeight, l: fLeft, t: fTop }, svgRef);
+      // drawLines(screenPos, { w: fWidth, h: fHeight, l: fLeft, t: fTop }, svgRef);
     }
     return ({
       ...prev,

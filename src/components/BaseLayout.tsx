@@ -64,9 +64,9 @@ export const BaseLayout = () => {
           />
         </div>
 
-        <div className={mapContStyle} id='DeckMap'>
+        {/*<div className={mapContStyle} id='DeckMap'>
           {<DeckMap view_state={viewState} layers={[]} />}
-        </div>
+        </div>*/}
 
       </div >
     </>
