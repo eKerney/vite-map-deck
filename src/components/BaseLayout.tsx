@@ -17,14 +17,14 @@ export const BaseLayout = () => {
     '', .05, .25, .05, controlsState.rotation, ['slow', '', '', '', 'fast'],
     (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, rotation: parseFloat(e.target.value) })],
   [
-    '', 1, 2, 1, controlsState.land, ['land', 'hex'],
+    '', 1, 3, 1, controlsState.land, ['land', 'H3', 'A5'],
     (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, land: parseInt(e.target.value) })],
   [
     'res', 1, 3, 1, controlsState.res, [1, 2, 3],
     (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, res: parseInt(e.target.value) })],
   ];
 
-  useEffect(() => console.log('bnaser', controlsState), [controlsState])
+  // useEffect(() => console.log('bnaser', controlsState), [controlsState])
 
   const globeClickCallback = (
     coords: [number, number] | never[],
@@ -57,16 +57,16 @@ export const BaseLayout = () => {
                   value={d[4]}
                 />
                 <div className="flex justify-between px-2.5 mt-2 text-xs">
-                  {d[5].map((e: string | number) => <span>{e}</span>)}
+                  {d[5].map((e: string | number, i) => <span key={`${e}-${i}`}>{e}</span>)}
                 </div>
               </div>
             )}
           />
         </div>
 
-        <div className={mapContStyle} id='DeckMap'>
+        {/*<div className={mapContStyle} id='DeckMap'>
           {<DeckMap view_state={viewState} layers={[]} />}
-        </div>
+        </div>*/}
 
       </div >
     </>
