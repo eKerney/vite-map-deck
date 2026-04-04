@@ -1,6 +1,7 @@
 import { GeoJSONFeature } from "maplibre-gl";
 import * as h3 from 'h3-js';
-import { cellToBoundary, u64ToHex, cellToChildren } from "a5-js";
+import { cellToBoundary, u64ToHex, cellToChildren, cellToLonLat } from "a5-js";
+import a5SampleFeatures from '../data/A5sampleData.json'
 
 const splitAtAntimeridian = (coords: number[][]) => {
   let crossesAntimeridian = false;
@@ -91,22 +92,73 @@ export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
 }
 
 export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => {
+  const a5Countries = geoJSONfeatures.map(country => {
+    const geometry = country.geometry;
+    const name = country.properties.NAME;
+    if (!geometry || !geometry.coordinates) {
+      return { name, pentagons: [] };
+    }
+    let pentagons: string[] = [];
+
+    try {
+      if (geometry.type === 'MultiPolygon') {
+        geometry.coordinates.forEach((polygonCoords) => pentagons = pentagons.concat(h3.polyfill(polygonCoords, res, true)));
+      } else pentagons = h3.polyfill(geometry.coordinates, res, true);
+      return { name, pentagons: [...new Set(pentagons)] };
+    } catch (error) {
+      return { name, hexagons: [] };
+    }
+  });
+  console.log('centroids', getA5centroids(1));
+
+  return {
+    type: 'FeatureCollection',
+    features: a5Countries.flatMap(country =>
+      country?.pentagons?.flatMap(hex => {
+        const boundaries = splitAtAntimeridian(h3.h3ToGeoBoundary(hex, true).reverse());
+        return boundaries.map(boundary => ({
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [boundary]
+          },
+          properties: { country: country.name }
+        }));
+      })
+    )
+  };
+
+
+  // const reversedFeatures = a5SampleFeatures.features.map((d) => {
+  //   let reversed: number[][] = [];
+  //   d.geometry.coordinates[0].forEach((e: number[]) => reversed.push(e.reverse()));
+  //   return {
+  //     type: "Feature",
+  //     geometry: { type: "Polygon", coordinates: [reversed] },
+  //     properties: d.properties,
+  //   };
+  // })
+  // console.log('A5SampleFeatures', a5SampleFeatures)
+  // return { type: "FeatureCollection", features: reversedFeatures };
+
+}
+
+const getA5centroids = (resolution: number) => {
   const cells = [];
-  const cellIds = cellToChildren(0n, 2);
+  const cellIds = cellToChildren(0n, resolution);
 
   // Generate boundary for each cell
   for (let cellId of cellIds) {
     const cellIdHex = u64ToHex(cellId);
     const boundary = cellToBoundary(cellId);
+    const centroid = cellToLonLat(cellId);
 
     cells.push({
       type: "Feature",
       geometry: { type: "Polygon", coordinates: [boundary] },
-      properties: { cellIdHex }
+      properties: { cellIdHex, 'centroid': centroid }
     });
   }
 
   return { type: "FeatureCollection", features: cells };
-
 }
-

@@ -127,7 +127,7 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     .data(controlsState.land === 2
       ? hexGeoJSON.features
       : controlsState.land === 3
-        ? a5GeoJSON
+        ? a5GeoJSON.features
         : data.features)
     .enter()
     .append('path')
