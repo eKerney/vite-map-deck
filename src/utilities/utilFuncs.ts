@@ -92,6 +92,7 @@ export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
 }
 
 export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => {
+  console.log('centroids', getA5centroids(1));
   const a5Countries = geoJSONfeatures.map(country => {
     const geometry = country.geometry;
     const name = country.properties.NAME;
@@ -102,14 +103,16 @@ export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
 
     try {
       if (geometry.type === 'MultiPolygon') {
-        geometry.coordinates.forEach((polygonCoords) => pentagons = pentagons.concat(h3.polyfill(polygonCoords, res, true)));
+        geometry.coordinates.forEach((polygonCoords) =>
+          pentagons = pentagons.concat(h3.polyfill(polygonCoords, res, true)));
       } else pentagons = h3.polyfill(geometry.coordinates, res, true);
+      console.log('pentagons', pentagons);
+      console.log('coordinates', geometry.coordinates);
       return { name, pentagons: [...new Set(pentagons)] };
     } catch (error) {
-      return { name, hexagons: [] };
+      return { name, pentagons: [] };
     }
   });
-  console.log('centroids', getA5centroids(1));
 
   return {
     type: 'FeatureCollection',
