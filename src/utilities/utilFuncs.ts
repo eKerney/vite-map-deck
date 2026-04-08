@@ -1,7 +1,6 @@
 import { GeoJSONFeature } from "maplibre-gl";
 import * as h3 from 'h3-js';
 import { cellToBoundary, u64ToHex, cellToChildren, cellToLonLat } from "a5-js";
-import a5SampleFeatures from '../data/A5sampleData.json'
 
 const splitAtAntimeridian = (coords: number[][]) => {
   let crossesAntimeridian = false;
@@ -92,7 +91,7 @@ export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
 }
 
 export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => {
-  console.log('centroids', getA5centroids(1));
+  console.log('centroids', getAllA5centroids(0));
   const a5Countries = geoJSONfeatures.map(country => {
     const geometry = country.geometry;
     const name = country.properties.NAME;
@@ -106,8 +105,8 @@ export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
         geometry.coordinates.forEach((polygonCoords) =>
           pentagons = pentagons.concat(h3.polyfill(polygonCoords, res, true)));
       } else pentagons = h3.polyfill(geometry.coordinates, res, true);
-      console.log('pentagons', pentagons);
-      console.log('coordinates', geometry.coordinates);
+      // console.log('pentagons', pentagons);
+      // console.log('coordinates', geometry.coordinates);
       return { name, pentagons: [...new Set(pentagons)] };
     } catch (error) {
       return { name, pentagons: [] };
@@ -132,36 +131,44 @@ export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
   };
 
 
-  // const reversedFeatures = a5SampleFeatures.features.map((d) => {
-  //   let reversed: number[][] = [];
-  //   d.geometry.coordinates[0].forEach((e: number[]) => reversed.push(e.reverse()));
-  //   return {
-  //     type: "Feature",
-  //     geometry: { type: "Polygon", coordinates: [reversed] },
-  //     properties: d.properties,
-  //   };
-  // })
-  // console.log('A5SampleFeatures', a5SampleFeatures)
-  // return { type: "FeatureCollection", features: reversedFeatures };
-
 }
 
-const getA5centroids = (resolution: number) => {
+export const getAllA5centroids = (resolution: number) => {
   const cells = [];
   const cellIds = cellToChildren(0n, resolution);
 
   // Generate boundary for each cell
   for (let cellId of cellIds) {
     const cellIdHex = u64ToHex(cellId);
-    const boundary = cellToBoundary(cellId);
+    // const boundary = cellToBoundary(cellId);
     const centroid = cellToLonLat(cellId);
 
-    cells.push({
-      type: "Feature",
-      geometry: { type: "Polygon", coordinates: [boundary] },
-      properties: { cellIdHex, 'centroid': centroid }
-    });
+    cells.push({ cellIdHex, 'centroid': centroid }
+    );
   }
 
-  return { type: "FeatureCollection", features: cells };
+  return cells;
 }
+
+
+/**
+ * Proposed workflow for A5 polyfill like function from H3 
+ *
+ * 1. get single/multipolygion geometry from feature 
+ * 2. Use turf to create a turf polygon object 
+ * 3. Iterate through ALL A5 centroids and find which are INSIDE polygon 
+ * 4. Push the CellID if centroid in polygon
+ * 5. CellIDs to GeoJSON geometry 
+ * 6. Return GeoJSON Geometry 
+ *
+ * @param centroids: Array of objects containing cellID and point
+ * @returns A GeoJSON FeatureCollection containing centroid features
+ *
+ * @example
+ * ```ts
+ * const geojson = getA5centroids(0);
+ * console.log(geojson.features[0].properties.cellIdHex);
+ * // → "200000000000000"
+ * ```
+ */
+
