@@ -1,7 +1,7 @@
 import { GeoJSONFeature } from "maplibre-gl";
 import * as h3 from 'h3-js';
 import { cellToBoundary, u64ToHex, cellToChildren, cellToLonLat } from "a5-js";
-import { Polygon } from "./types";
+import { Geometry, Polygon } from "./types";
 import { points, polygon } from "@turf/helpers";
 import pointsWithinPolygon from "@turf/points-within-polygon";
 
@@ -107,7 +107,13 @@ export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
       if (geometry.type === 'MultiPolygon') {
         geometry.coordinates.forEach((polygonCoords) =>
           pentagons = pentagons.concat(h3.polyfill(polygonCoords, res, true)));
-      } else pentagons = h3.polyfill(geometry.coordinates, res, true);
+        // let's work here first 
+        // get centroids  
+        // get cellIDs 
+        // get GeoJSON 
+      } else {
+        pentagons = h3.polyfill(geometry.coordinates, res, true);
+      }
       // console.log('pentagons', pentagons);
       // console.log('coordinates', geometry.coordinates);
       return { name, pentagons: [...new Set(pentagons)] };
@@ -151,16 +157,7 @@ export const getAllA5centroids = (resolution: number) => {
   }
 
   return cells;
-  //   cells.push({
-  //     type: "Feature",
-  //     geometry: { type: "Polygon", coordinates: [boundary] },
-  //     properties: { cellIdHex, 'centroid': centroid }
-  //   });
-  // }
-  //
-  // return { type: "FeatureCollection", features: cells };
 }
-
 
 export type A5Centroid = {
   cellIdHex: string;
@@ -184,16 +181,34 @@ export type A5Centroid = {
  * @returns Array of cellIdHex that contain that polygon
  *
  */
-export const a5PolygonToCell = (centroids: Array<A5Centroid>, polygonGeometry: Polygon): Array<string> => {
-  console.log(centroids, polygonGeometry);
+export const a5PolygonToCell = (centroids: Array<A5Centroid>, polygonGeometry: Polygon): Array<string | null> => {
+  // console.log(centroids, polygonGeometry);
   const intersections = centroids.map((d) => {
     const poly = polygon(polygonGeometry.coordinates);
     const pnt = points([d.centroid])
     const result = pointsWithinPolygon(pnt, poly)
-    return result?.features[0]?.geometry?.coordinates
+    return result?.features[0]?.geometry?.coordinates[0] ? d.cellIdHex : null;
   })
+  return intersections.filter(item => item != null)
+  // return ['5380000000000000'];
+}
 
-  return ['5380000000000000'];
+export const a5cellIdsToGeoJSON = (cellHexIds: string[]) => {
+  const geoJSONfeatures: GeoJSONFeature[] = cellHexIds.map((d: string) => {
+    const boundary = cellToBoundary(BigInt(d));
+    return {
+      type: "Feature",
+      geometry: { type: "Polygon", coordinates: [boundary] },
+      properties: { 'cellIdHex': d }
+    };
+  });
+  // console.log(geoJSONfeatures)
 
+  return { type: "FeatureCollection", features: geoJSONfeatures };
+}
 
+export const a5cellIdsToGeometries = (cellHexIds: string[]) => {
+  const geometryArray: Geometry[] = cellHexIds.map((d: string) => cellToBoundary(BigInt(d)));
+  console.log('geometries', geometryArray)
+  return geometryArray;
 }
