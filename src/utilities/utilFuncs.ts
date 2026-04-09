@@ -1,6 +1,9 @@
 import { GeoJSONFeature } from "maplibre-gl";
 import * as h3 from 'h3-js';
 import { cellToBoundary, u64ToHex, cellToChildren, cellToLonLat } from "a5-js";
+import { Geometry, Polygon } from "./types";
+import { points, polygon } from "@turf/helpers";
+import pointsWithinPolygon from "@turf/points-within-polygon";
 
 const splitAtAntimeridian = (coords: number[][]) => {
   let crossesAntimeridian = false;
@@ -91,7 +94,7 @@ export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
 }
 
 export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => {
-  console.log('centroids', getAllA5centroids(0));
+  console.log('centroids', getAllA5centroids(2));
   const a5Countries = geoJSONfeatures.map(country => {
     const geometry = country.geometry;
     const name = country.properties.NAME;
@@ -104,7 +107,13 @@ export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
       if (geometry.type === 'MultiPolygon') {
         geometry.coordinates.forEach((polygonCoords) =>
           pentagons = pentagons.concat(h3.polyfill(polygonCoords, res, true)));
-      } else pentagons = h3.polyfill(geometry.coordinates, res, true);
+        // let's work here first 
+        // get centroids  
+        // get cellIDs 
+        // get GeoJSON 
+      } else {
+        pentagons = h3.polyfill(geometry.coordinates, res, true);
+      }
       // console.log('pentagons', pentagons);
       // console.log('coordinates', geometry.coordinates);
       return { name, pentagons: [...new Set(pentagons)] };
@@ -150,7 +159,10 @@ export const getAllA5centroids = (resolution: number) => {
   return cells;
 }
 
-
+export type A5Centroid = {
+  cellIdHex: string;
+  centroid: number[];
+}
 /**
  * Proposed workflow for A5 polyfill like function from H3 
  *
@@ -158,17 +170,45 @@ export const getAllA5centroids = (resolution: number) => {
  * 2. Use turf to create a turf polygon object 
  * 3. Iterate through ALL A5 centroids and find which are INSIDE polygon 
  * 4. Push the CellID if centroid in polygon
- * 5. CellIDs to GeoJSON geometry 
- * 6. Return GeoJSON Geometry 
+ * 5. Return array of cellIDs
+ *
+ * Future Function:
+ * 6. CellIDs to GeoJSON geometry 
+ * 7. Return GeoJSON Geometrl
  *
  * @param centroids: Array of objects containing cellID and point
- * @returns A GeoJSON FeatureCollection containing centroid features
+ * @param polygonGeometry: single/multipolygon GeoJSON Geometry
+ * @returns Array of cellIdHex that contain that polygon
  *
- * @example
- * ```ts
- * const geojson = getA5centroids(0);
- * console.log(geojson.features[0].properties.cellIdHex);
- * // → "200000000000000"
- * ```
  */
+export const a5PolygonToCell = (centroids: Array<A5Centroid>, polygonGeometry: Polygon): Array<string | null> => {
+  // console.log(centroids, polygonGeometry);
+  const intersections = centroids.map((d) => {
+    const poly = polygon(polygonGeometry.coordinates);
+    const pnt = points([d.centroid])
+    const result = pointsWithinPolygon(pnt, poly)
+    return result?.features[0]?.geometry?.coordinates[0] ? d.cellIdHex : null;
+  })
+  return intersections.filter(item => item != null)
+  // return ['5380000000000000'];
+}
 
+export const a5cellIdsToGeoJSON = (cellHexIds: string[]) => {
+  const geoJSONfeatures: GeoJSONFeature[] = cellHexIds.map((d: string) => {
+    const boundary = cellToBoundary(BigInt(d));
+    return {
+      type: "Feature",
+      geometry: { type: "Polygon", coordinates: [boundary] },
+      properties: { 'cellIdHex': d }
+    };
+  });
+  // console.log(geoJSONfeatures)
+
+  return { type: "FeatureCollection", features: geoJSONfeatures };
+}
+
+export const a5cellIdsToGeometries = (cellHexIds: string[]) => {
+  const geometryArray: Geometry[] = cellHexIds.map((d: string) => cellToBoundary(BigInt(d)));
+  console.log('geometries', geometryArray)
+  return geometryArray;
+}

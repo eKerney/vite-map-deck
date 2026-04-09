@@ -1,5 +1,7 @@
 import { describe, expect, it, test } from "vitest";
-import { getAllA5centroids } from "./utilFuncs";
+import { a5cellIdsToGeoJSON, a5cellIdsToGeometries, a5PolygonToCell, getAllA5centroids } from "./utilFuncs";
+import h3SinglePolyMorocco from '../data/H3moroccoHexFeature.json';
+import { Polygon } from "./types";
 
 // describe('test getWindDirection', function() {
 //   test('wind degrees 100: result should be E', () => {
@@ -18,7 +20,7 @@ import { getAllA5centroids } from "./utilFuncs";
 // })
 
 describe('test getAllA5centroids', function() {
-  it('returns valid GeoJSON with expected cellIdHex at Res0 ', async () => {
+  it('returns valid cellIdHex, centroid at Res0 ', async () => {
     const input = 0
     const result = getAllA5centroids(input);
 
@@ -32,7 +34,7 @@ describe('test getAllA5centroids', function() {
     )
   });
 
-  it('returns valid GeoJSON with expected cellIdHex at Res1', async () => {
+  it('returns valid cellIdHex, centroid at Res1', async () => {
     const input = 1
     const result = getAllA5centroids(input);
 
@@ -47,3 +49,98 @@ describe('test getAllA5centroids', function() {
   })
 });
 
+describe('test a5PolygonToCell', function() {
+  it('return the correct cellIdHex array Res0', async () => {
+    const centroids = [{ cellIdHex: '5380000000000000', centroid: [-10.838189842367342, 33.3067237705403] },
+    { cellIdHex: '5380028370000000', centroid: [-100.838189842367342, 75.3067237705403] }];
+    const result = a5PolygonToCell(centroids, h3SinglePolyMorocco.geometry as Polygon);
+    expect(result).toEqual(
+      expect.arrayContaining(['5380000000000000'])
+    )
+  });
+});
+
+describe('test a5cellIdsToGeoJSON', function() {
+  it('returns a GeoJSON Feature Collection with the correct polygons', async () => {
+    const centroids = ['5380000000000000'];
+    const result = a5cellIdsToGeoJSON(centroids);
+    expect(result.features).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          "geometry": {
+            "coordinates": [
+              [
+                [
+                  -139.52242598238394,
+                  55.8635309838565,
+                ],
+                [
+                  -139.52238797387025,
+                  55.86361405638346,
+                ],
+                [
+                  -139.52252621502458,
+                  55.863601018331615,
+                ],
+                [
+                  -139.52260731488064,
+                  55.863527459712444,
+                ],
+                [
+                  -139.5225257989194,
+                  55.86346590272602,
+                ],
+                [
+                  -139.52242598238394,
+                  55.8635309838565,
+                ],
+              ],
+            ],
+            "type": "Polygon",
+          },
+          "properties": {
+            "cellIdHex": "5380000000000000",
+          },
+          "type": "Feature",
+        })
+      ])
+    )
+  });
+});
+
+describe('test a5cellIdsToGeometries', function() {
+  it('returns a', async () => {
+    const centroids = ['5380000000000000'];
+    const result = a5cellIdsToGeometries(centroids);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        [
+          [
+            -139.52242598238394,
+            55.8635309838565,
+          ],
+          [
+            -139.52238797387025,
+            55.86361405638346,
+          ],
+          [
+            -139.52252621502458,
+            55.863601018331615,
+          ],
+          [
+            -139.52260731488064,
+            55.863527459712444,
+          ],
+          [
+            -139.5225257989194,
+            55.86346590272602,
+          ],
+          [
+            -139.52242598238394,
+            55.8635309838565,
+          ],
+        ],
+      ])
+    )
+  });
+});
