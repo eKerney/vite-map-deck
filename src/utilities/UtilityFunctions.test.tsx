@@ -1,5 +1,7 @@
 import { describe, expect, it, test } from "vitest";
-import { getAllA5centroids } from "./utilFuncs";
+import { a5PolygonToCell, getAllA5centroids } from "./utilFuncs";
+import h3SinglePolyMorocco from '../data/H3moroccoHexFeature.json';
+import { Polygon } from "./types";
 
 // describe('test getWindDirection', function() {
 //   test('wind degrees 100: result should be E', () => {
@@ -18,7 +20,7 @@ import { getAllA5centroids } from "./utilFuncs";
 // })
 
 describe('test getAllA5centroids', function() {
-  it('returns valid GeoJSON with expected cellIdHex at Res0 ', async () => {
+  it('returns valid cellIdHex, centroid at Res0 ', async () => {
     const input = 0
     const result = getAllA5centroids(input);
 
@@ -32,7 +34,7 @@ describe('test getAllA5centroids', function() {
     )
   });
 
-  it('returns valid GeoJSON with expected cellIdHex at Res1', async () => {
+  it('returns valid cellIdHex, centroid at Res1', async () => {
     const input = 1
     const result = getAllA5centroids(input);
 
@@ -47,3 +49,13 @@ describe('test getAllA5centroids', function() {
   })
 });
 
+describe('test a5PolygonToCell', function() {
+  it('return the correct cellIdHex array Res0', async () => {
+    const centroids = { cellIdHex: '5380000000000000', centroid: [-10.838189842367342, 33.3067237705403] }
+    const result = a5PolygonToCell([centroids], h3SinglePolyMorocco.geometry as Polygon);
+
+    expect(result).toEqual(
+      expect.arrayContaining(['5380000000000000'])
+    )
+  });
+});

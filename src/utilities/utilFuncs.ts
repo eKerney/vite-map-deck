@@ -1,6 +1,9 @@
 import { GeoJSONFeature } from "maplibre-gl";
 import * as h3 from 'h3-js';
 import { cellToBoundary, u64ToHex, cellToChildren, cellToLonLat } from "a5-js";
+import { Polygon } from "./types";
+import { points, polygon } from "@turf/helpers";
+import pointsWithinPolygon from "@turf/points-within-polygon";
 
 const splitAtAntimeridian = (coords: number[][]) => {
   let crossesAntimeridian = false;
@@ -91,7 +94,7 @@ export const getH3GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => 
 }
 
 export const getA5GeoJSON = (geoJSONfeatures: GeoJSONFeature[], res: number) => {
-  console.log('centroids', getAllA5centroids(0));
+  console.log('centroids', getAllA5centroids(2));
   const a5Countries = geoJSONfeatures.map(country => {
     const geometry = country.geometry;
     const name = country.properties.NAME;
@@ -148,9 +151,21 @@ export const getAllA5centroids = (resolution: number) => {
   }
 
   return cells;
+  //   cells.push({
+  //     type: "Feature",
+  //     geometry: { type: "Polygon", coordinates: [boundary] },
+  //     properties: { cellIdHex, 'centroid': centroid }
+  //   });
+  // }
+  //
+  // return { type: "FeatureCollection", features: cells };
 }
 
 
+export type A5Centroid = {
+  cellIdHex: string;
+  centroid: number[];
+}
 /**
  * Proposed workflow for A5 polyfill like function from H3 
  *
@@ -158,17 +173,27 @@ export const getAllA5centroids = (resolution: number) => {
  * 2. Use turf to create a turf polygon object 
  * 3. Iterate through ALL A5 centroids and find which are INSIDE polygon 
  * 4. Push the CellID if centroid in polygon
- * 5. CellIDs to GeoJSON geometry 
- * 6. Return GeoJSON Geometry 
+ * 5. Return array of cellIDs
+ *
+ * Future Function:
+ * 6. CellIDs to GeoJSON geometry 
+ * 7. Return GeoJSON Geometrl
  *
  * @param centroids: Array of objects containing cellID and point
- * @returns A GeoJSON FeatureCollection containing centroid features
+ * @param polygonGeometry: single/multipolygon GeoJSON Geometry
+ * @returns Array of cellIdHex that contain that polygon
  *
- * @example
- * ```ts
- * const geojson = getA5centroids(0);
- * console.log(geojson.features[0].properties.cellIdHex);
- * // → "200000000000000"
- * ```
  */
+export const a5PolygonToCell = (centroids: Array<A5Centroid>, polygonGeometry: Polygon): Array<string> => {
+  console.log(centroids, polygonGeometry);
+  const intersections = centroids.map((d) => {
+    const poly = polygon(polygonGeometry.coordinates);
+    const pnt = points([d.centroid])
+    const result = pointsWithinPolygon(pnt, poly)
+    return result?.features[0]?.geometry?.coordinates
+  })
 
+  return ['5380000000000000'];
+
+
+}
