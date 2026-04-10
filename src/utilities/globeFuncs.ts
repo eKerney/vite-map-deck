@@ -281,7 +281,8 @@ export const globeSetup = ({ width, height, radius, svg }: WidthHeight & SetupGr
   const projection = geoOrthographic()
     .scale(radius)
     .translate([0, 0])
-    .rotate([0, 0]); // Initial rotation [longitude, latitude]
+    .rotate([0, 0])
+    .clipAngle(80);
   const path = geoPath().projection(projection);
 
   // Globe background (ocean)
