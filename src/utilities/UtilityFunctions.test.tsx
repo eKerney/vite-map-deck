@@ -1,7 +1,7 @@
 import { describe, expect, it, test } from "vitest";
-import { a5cellIdsToGeoJSON, a5cellIdsToGeometries, a5PolygonToCell, getAllA5centroids } from "./utilFuncs";
+import { a5cellIdsToGeoJSON, a5cellIdsToGeometries, a5PolygonToCell, getA5GeoJSON, getAllA5centroids } from "./utilFuncs";
 import h3SinglePolyMorocco from '../data/H3moroccoHexFeature.json';
-import { Polygon } from "./types";
+import { GeoJSONgeneric, Polygon, Feature } from "./types";
 
 // describe('test getWindDirection', function() {
 //   test('wind degrees 100: result should be E', () => {
@@ -144,3 +144,13 @@ describe('test a5cellIdsToGeometries', function() {
     )
   });
 });
+
+describe('test getA5GeoJSON', function() {
+  it('returns a', async () => {
+    const res = 1;
+    const result = getA5GeoJSON([h3SinglePolyMorocco], res);
+    console.log('result', result)
+  });
+});
+
+
