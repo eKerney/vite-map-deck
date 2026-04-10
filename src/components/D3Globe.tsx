@@ -21,7 +21,7 @@ export const D3Globe = ({ onGlobeClick, controlsState }: D3PanelProps) => {
     const a5GeoJSON = getA5GeoJSON(data ? data.features : [], controlsState.res);
     data && drawGlobe({ width, height, svgRef, onGlobeClick, controlsState, data, hexGeoJSON, a5GeoJSON })
     // console.log('hex', hexGeoJSON, controlsState)
-    // console.log('A5', a5GeoJSON, controlsState)
+    // console.log('A5', a5GeoJSON)
     // cleanup func
     return () => {
       if (svgRef.current) {

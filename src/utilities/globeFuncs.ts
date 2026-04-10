@@ -2,7 +2,7 @@ import { Dispatch, RefObject, SetStateAction } from "react";
 import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
 import { FlyToInterpolator, MapViewState } from "deck.gl";
-import { D3Features, GlobeContexts, GlobeState, SetupGraphics, WidthHeight } from "./types";
+import { D3Features, Feature, GlobeContexts, GlobeState, Polygon, SetupGraphics, WidthHeight } from "./types";
 
 
 export const handleGlobeClick = (
@@ -121,9 +121,8 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
   svg.selectAll('*').remove();
 
   const { g, path, projection } = globeSetup({ width, height, radius, svg });
-  console.log('globe', a5GeoJSON)
 
-  const features = g.selectAll('.land')
+  const features: Feature = g.selectAll('.land')
     .data(controlsState.land === 2
       ? hexGeoJSON.features
       : controlsState.land === 3
@@ -210,6 +209,7 @@ export const globeInteractions = ({ width, height, svgRef, onGlobeClick, control
       projection.scale(event.transform.k);
       features.attr('d', path);
       g.select('circle').attr('r', event.transform.k);
+      g.select('.gradient-circle').attr('r', (radius / 1.028) * (event.transform.k / (radius - 10)));
     });
   // Capture Click for map interaction
   svg.on('click', (event) => {
@@ -224,19 +224,24 @@ export const globeInteractions = ({ width, height, svgRef, onGlobeClick, control
   svg.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(radius - 10));
 }
 
+export type CountryFeatureProps = {
+  country?: string;
+  NAME: string;
+}
 export const dataInteractions = (
-  features: d3.Selection<SVGPathElement, unknown, SVGGElement, unknown>,
+  features: d3.Selection<SVGPathElement, Feature<Polygon, CountryFeatureProps>, SVGGElement, unknown>,
   svg: d3.Selection<SVGSVGElement | null, unknown, null, undefined>,
 ) => {
-  features.on('click', null); // Remove click listeners
-
+  features.on('click', null);
+  const hoverState = new WeakMap<SVGPathElement, boolean>();
 
   features
     .on('mouseover', function(event, d) {
-      if (!d.isHovered) {
-        console.log(d.isHovered)
-        d.isHovered = true;
-        // rotationEvent.on('speedChange', (newSpeed: number) => updateRotation(newSpeed));
+      const element = this as SVGPathElement;
+      let isHovered = hoverState.get(element) || false;
+
+      if (!isHovered) {
+        isHovered = true;
         d3.select(this)
           .raise() // Bring to front to avoid overlap
           .style('fill-opacity', 0.5)
@@ -244,6 +249,7 @@ export const dataInteractions = (
           .transition()
           .duration(200)
           .attr('transform', 'scale(1.1)'); // Scale up by 10%
+        svg.select('.tooltip').remove();
         svg.append('text')
           .attr('class', 'tooltip')
           .attr('x', event.offsetX + 10)
@@ -259,8 +265,9 @@ export const dataInteractions = (
         .attr('x', event.offsetX + 10)
         .attr('y', event.offsetY - 10);
     })
-    .on('mouseout', function(event, d) {
-      d.isHovered = false;
+    .on('mouseout', function(_event, _d: Feature) {
+      const element = this as SVGPathElement;
+      hoverState.set(element, false);
       d3.select(this)
         .style('fill-opacity', 0.8)
         .attr('fill', '#1A1A1A')
@@ -290,7 +297,6 @@ export const globeSetup = ({ width, height, radius, svg }: WidthHeight & SetupGr
     .datum({ type: "Sphere" })
     .attr('r', radius)
     .attr('fill', '#333338')
-    // .attr('fill', '#71717A')
     .attr('fill-opacity', '0.3')
 
   globeGradient({ width, height, radius, svg: g });
@@ -302,7 +308,7 @@ export const globeGradient = ({ width, height, radius, svg }: WidthHeight & Setu
   const gradient = svg.append("defs").append("radialGradient")
     .attr("id", "gradient")
     .attr("cx", "75%")
-    .attr("cy", "25%");
+    .attr("cy", "25%")
 
   gradient.append("stop")
     .attr("offset", "5%")
@@ -313,10 +319,9 @@ export const globeGradient = ({ width, height, radius, svg }: WidthHeight & Setu
     .attr("stop-color", "#333338");
 
   const fill = svg.append("circle")
-    // .attr("cx", width / 2)
-    // .attr("cy", height / 2)
+    .attr("class", "gradient-circle")
     .attr("r", radius / 1.028)
     .style("fill", "url(#gradient)")
-    .attr('fill-opacity', '0.12')
+    .attr('fill-opacity', '0.18')
     .attr('stroke', 'none')
 }

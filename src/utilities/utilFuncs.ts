@@ -123,7 +123,6 @@ export const getA5GeoJSON = (geoJSONfeatures: Feature[], res: number) => {
       country?.pentagons?.flatMap(hex => {
         // const boundaries = splitAtAntimeridian(h3.h3ToGeoBoundary(hex, true).reverse());
         const boundaries = a5cellIdsToGeometries(hex);
-        console.log('boundaries', boundaries)
         const reversedBoundaries = boundaries.map((d: number[][]) => [...d].reverse());
         return reversedBoundaries.map(boundary => ({
           type: 'Feature',
@@ -141,7 +140,6 @@ export const getA5GeoJSON = (geoJSONfeatures: Feature[], res: number) => {
 
 export const getAllA5centroids = (resolution: number) => {
   const cells = [];
-  // const cellIds = cellToChildren(0n, resolution);
   const cellIds = cellToChildren(0n, resolution + 1);
 
   for (let cellId of cellIds) {
@@ -172,7 +170,6 @@ export const a5PolygonToCell = (centroids: Array<A5Centroid>, polygonGeometry: P
       const poly = polygon(polygonGeometry);
       const pnt = points([d.centroid])
       const result = pointsWithinPolygon(pnt, poly)
-      // if (result?.features[0]?.geometry?.coordinates[0]) console.log('a5PolygonToCell', d.cellIdHex)
 
       return result?.features[0]?.geometry?.coordinates[0] ? d.cellIdHex : null;
     }) : [];
