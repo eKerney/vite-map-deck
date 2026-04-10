@@ -236,14 +236,14 @@ export const dataInteractions = (
   const hoverState = new WeakMap<SVGPathElement, boolean>();
 
   features
-    .on('mouseover', function(event, d) {
+    .on('mouseenter', function(event, d) {
       const element = this as SVGPathElement;
       let isHovered = hoverState.get(element) || false;
 
       if (!isHovered) {
         isHovered = true;
         d3.select(this)
-          .raise() // Bring to front to avoid overlap
+          // .raise() // Bring to front to avoid overlap
           .style('fill-opacity', 0.5)
           .attr('fill', '#fff')
           .transition()
@@ -265,7 +265,7 @@ export const dataInteractions = (
         .attr('x', event.offsetX + 10)
         .attr('y', event.offsetY - 10);
     })
-    .on('mouseout', function(_event, _d: Feature) {
+    .on('mouseleave', function(_event, _d: Feature) {
       const element = this as SVGPathElement;
       hoverState.set(element, false);
       d3.select(this)
