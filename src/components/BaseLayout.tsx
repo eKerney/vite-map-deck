@@ -6,8 +6,8 @@ import { ControlItem, ControlProps } from "./types";
 
 export const BaseLayout = () => {
   const [viewState, setViewState] = useState<MapViewState>({ longitude: 0, latitude: 0, zoom: 2, pitch: 0, bearing: 0 });
-  const [controlsState, setControlsState] = useState<ControlProps>({ rotation: .05, land: 1, res: 1 });
-  const mapContStyle = "col-span-4 row-span-4 relative flex mt-8 -ml-24 opacity-0 rounded-lg shadow-2xl [border:0px_solid_transparent] bg-clip-padding [background-image:linear-gradient(to_right,#1A1A1A,#1A1A1A),linear-gradient(to_right,#5A67D8,#34C759)] border-custom-blue shadow-custom-blue";
+  const [controlsState, setControlsState] = useState<ControlProps>({ rotation: .05, land: 1, res: 1, color: 1 });
+  // const mapContStyle = "col-span-4 row-span-4 relative flex mt-8 -ml-24 opacity-0 rounded-lg shadow-2xl [border:0px_solid_transparent] bg-clip-padding [background-image:linear-gradient(to_right,#1A1A1A,#1A1A1A),linear-gradient(to_right,#5A67D8,#34C759)] border-custom-blue shadow-custom-blue";
 
   useEffect(() => {
     updateRotationSpeed(controlsState.rotation);
@@ -22,9 +22,12 @@ export const BaseLayout = () => {
   [
     'res', 1, 3, 1, controlsState.res, [1, 2, 3],
     (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, res: parseInt(e.target.value) })],
+  [
+    'col', 1, 3, 1, controlsState.color, ['grey', 'vir', 'mag'],
+    (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, color: parseInt(e.target.value) })],
   ];
 
-  // useEffect(() => console.log('bnaser', controlsState), [controlsState])
+  useEffect(() => console.log('based', controlsState), [controlsState])
 
   const globeClickCallback = (
     coords: [number, number] | never[],
@@ -51,7 +54,7 @@ export const BaseLayout = () => {
                   type="range"
                   min={d[1]}
                   max={d[2]}
-                  className="range range-sm range-accent w-full"
+                  className="range range-xs range-accent w-full"
                   step={d[3]}
                   onChange={d[6]}
                   value={d[4]}

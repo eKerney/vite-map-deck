@@ -3,8 +3,7 @@ import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
 import { FlyToInterpolator, MapViewState } from "deck.gl";
 import { D3Features, Feature, GlobeContexts, GlobeState, Polygon, SetupGraphics, WidthHeight } from "./types";
-import { scaleSequential, interpolateViridis } from "d3";
-import { scaleDiverging, interpolateSpectral } from "d3";
+import { interpolateViridis, interpolateInferno } from "d3";
 
 
 export const handleGlobeClick = (
@@ -121,7 +120,8 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     .attr('width', width)
     .attr('height', height);
   svg.selectAll('*').remove();
-  const colorScale = (lat: number) => interpolateViridis(1 - (Math.abs(lat) / 56.25));
+  const divergingVirdis = (lat: number) => interpolateViridis(1 - (Math.abs(lat) / 56.25));
+  const divergingMagma = (lat: number) => d3.interpolateInferno(1 - (Math.abs(lat) / 56.25));
 
   const { g, path, projection } = globeSetup({ width, height, radius, svg });
 
@@ -135,8 +135,12 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     .append('path')
     .attr('class', 'land')
     .attr('d', path)
-    .attr('fill', '#1A1A1A')
-    // .attr('fill', d => colorScale(d3.geoCentroid(d)[1]))
+    .attr('fill', controlsState.color === 2
+      ? d => divergingVirdis(d3.geoCentroid(d)[1])
+      : controlsState.color === 3
+        ? d => divergingMagma(d3.geoCentroid(d)[1])
+        : '#1A1A1A'
+    )
     .attr('fill-opacity', '0.6')
     .attr('stroke', 'white')
     .attr('stroke-width', '.2px')

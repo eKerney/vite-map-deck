@@ -11,7 +11,8 @@ export const D3Globe = ({ onGlobeClick, controlsState }: D3PanelProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const { width, height } = useWindowSize();
 
-  const url = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
+  // const url = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
+  const url = 'https://raw.githubusercontent.com/eKerney/vite-map-deck/refs/heads/main/src/data/countries_filtered.geojson';
   const { data, isLoading, error } = useFetchData(url);
 
 
@@ -29,7 +30,7 @@ export const D3Globe = ({ onGlobeClick, controlsState }: D3PanelProps) => {
         svg.on('click', null);
       }
     }
-  }, [width, height, data, controlsState.land, controlsState.res]);
+  }, [width, height, data, controlsState.land, controlsState.res, controlsState.color]);
 
   return (
     <div >
