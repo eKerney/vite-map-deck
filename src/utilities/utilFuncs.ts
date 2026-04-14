@@ -116,15 +116,17 @@ export const getA5GeoJSON = (geoJSONfeatures: Feature[], res: number) => {
     }
   });
 
-  // return a5reversed;
   return {
     type: 'FeatureCollection',
     features: a5Countries.flatMap(country =>
       country?.pentagons?.flatMap(hex => {
-        // const boundaries = splitAtAntimeridian(h3.h3ToGeoBoundary(hex, true).reverse());
         const boundaries = a5cellIdsToGeometries(hex);
         const reversedBoundaries = boundaries.map((d: number[][]) => [...d].reverse());
+        // const splitReversedBoundaries = reversedBoundaries.flatMap(boundary =>
+        //   splitAtAntimeridian(boundary)
+        // );
         return reversedBoundaries.map(boundary => ({
+          // return splitReversedBoundaries.map(boundary => ({
           type: 'Feature',
           geometry: {
             type: 'Polygon',
@@ -156,14 +158,6 @@ export type A5Centroid = {
   centroid: number[];
 }
 
-/**
- * Proposed workflow for A5 polyfill like function from H3 
- *
- * @param centroids: Array of objects containing cellID and point
- * @param polygonGeometry: single/multipolygon GeoJSON Geometry
- * @returns Array of cellIdHex that contain that polygon
- *
- */
 export const a5PolygonToCell = (centroids: Array<A5Centroid>, polygonGeometry: Polygon): Array<string> => {
   const intersections = polygonGeometry.length > 0 ?
     centroids.map((d) => {
@@ -194,3 +188,4 @@ export const a5cellIdsToGeometries = (cellHexIds: string[]) => {
   const geometryArray: Geometry[] = cellHexIds.map((d: string) => cellToBoundary(hexToU64(d)));
   return geometryArray;
 }
+
