@@ -116,17 +116,15 @@ export const getA5GeoJSON = (geoJSONfeatures: Feature[], res: number) => {
     }
   });
 
-  // return a5reversed;
   return {
     type: 'FeatureCollection',
     features: a5Countries.flatMap(country =>
       country?.pentagons?.flatMap(hex => {
-        // const boundaries = splitAtAntimeridian(h3.h3ToGeoBoundary(hex, true).reverse());
         const boundaries = a5cellIdsToGeometries(hex);
         const reversedBoundaries = boundaries.map((d: number[][]) => [...d].reverse());
-        const splitReversedBoundaries = reversedBoundaries.flatMap(boundary =>
-          splitAtAntimeridian(boundary)
-        );
+        // const splitReversedBoundaries = reversedBoundaries.flatMap(boundary =>
+        //   splitAtAntimeridian(boundary)
+        // );
         return reversedBoundaries.map(boundary => ({
           // return splitReversedBoundaries.map(boundary => ({
           type: 'Feature',

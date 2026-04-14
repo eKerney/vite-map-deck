@@ -3,6 +3,8 @@ import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
 import { FlyToInterpolator, MapViewState } from "deck.gl";
 import { D3Features, Feature, GlobeContexts, GlobeState, Polygon, SetupGraphics, WidthHeight } from "./types";
+import { scaleSequential, interpolateViridis } from "d3";
+import { scaleDiverging, interpolateSpectral } from "d3";
 
 
 export const handleGlobeClick = (
@@ -119,6 +121,7 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     .attr('width', width)
     .attr('height', height);
   svg.selectAll('*').remove();
+  const colorScale = (lat: number) => interpolateViridis(1 - (Math.abs(lat) / 56.25));
 
   const { g, path, projection } = globeSetup({ width, height, radius, svg });
 
@@ -133,9 +136,10 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     .attr('class', 'land')
     .attr('d', path)
     .attr('fill', '#1A1A1A')
-    .attr('fill-opacity', '0.8')
+    // .attr('fill', d => colorScale(d3.geoCentroid(d)[1]))
+    .attr('fill-opacity', '0.6')
     .attr('stroke', 'white')
-    .attr('stroke-width', '.1px')
+    .attr('stroke-width', '.2px')
     .each(function() {
       d3.select(this).datum().isHovered = true;
     });
@@ -248,7 +252,7 @@ export const dataInteractions = (
           .attr('fill', '#fff')
           .transition()
           .duration(200)
-          .attr('transform', 'scale(1.1)'); // Scale up by 10%
+          .attr('transform', 'scale(1.2)'); // Scale up by 10%
         svg.select('.tooltip').remove();
         svg.append('text')
           .attr('class', 'tooltip')
