@@ -20,10 +20,10 @@ export const BaseLayout = () => {
     '', 1, 3, 1, controlsState.land, ['land', 'H3', 'A5'],
     (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, land: parseInt(e.target.value) })],
   [
-    'res', 1, 3, 1, controlsState.res, [1, 2, 3],
+    '', 1, 3, 1, controlsState.res, [1, 2, 3],
     (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, res: parseInt(e.target.value) })],
   [
-    'col', 1, 3, 1, controlsState.color, ['grey', 'vir', 'mag'],
+    '', 1, 3, 1, controlsState.color, ['grey', 'vir', 'mag'],
     (e: React.ChangeEvent<HTMLInputElement>) => setControlsState({ ...controlsState, color: parseInt(e.target.value) })],
   ];
 
@@ -49,12 +49,12 @@ export const BaseLayout = () => {
             items={controls}
             renderItems={(d, i) => (
               <div key={`${d[0]}-${i}`} className="w-full max-w-xl ">
-                <label className="label"><span className="label-text ">{d[0]}</span></label>
+                <label className="label"><span className="label-text">{d[0]}</span></label>
                 <input
                   type="range"
                   min={d[1]}
                   max={d[2]}
-                  className="range range-xs range-accent w-full"
+                  className="range range-sm range-accent w-full"
                   step={d[3]}
                   onChange={d[6]}
                   value={d[4]}
@@ -62,6 +62,7 @@ export const BaseLayout = () => {
                 <div className="flex justify-between px-2.5 mt-2 text-xs">
                   {d[5].map((e: string | number, i) => <span key={`${e}-${i}`}>{e}</span>)}
                 </div>
+                <hr aria-hidden="true" style={{ visibility: 'hidden', margin: '.3rem 0' }} />
               </div>
             )}
           />
