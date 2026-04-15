@@ -152,8 +152,8 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     // )
     .attr('fill-opacity', '0.8')
     .attr('stroke', 'white')
-    .attr('stroke-width', '.6px')
-    .attr('stroke-opacity', '0.2')
+    .attr('stroke-width', '.5px')
+    .attr('stroke-opacity', '0.1')
     .each(function() {
       d3.select(this).datum().isHovered = true;
     });
@@ -262,40 +262,45 @@ export const dataInteractions = (
       if (!isHovered) {
         isHovered = true;
         d3.select(this)
-          // .raise() // Bring to front to avoid overlap
-          .style('fill-opacity', 0.5)
-          .attr('fill', '#fff')
-          .transition()
-          .duration(200)
-          .attr('transform', 'scale(1.2)'); // Scale up by 10%
+          // .raise() 
+          .interrupt()
+          .style('transform', 'scale(1.2)')
+          .style('transform-origin', 'center')
+          .style('transform-box', 'fill-box')
+          .style('filter', 'url(#white-glow)')
+          .style('fill-opacity', 0.5)       // ← Ensure full opacity
+          .attr('fill', '#ffffff')           // ← Pure white, not off-white
         svg.select('.tooltip').remove();
         svg.append('text')
           .attr('class', 'tooltip')
-          .attr('x', event.offsetX + 10)
-          .attr('y', event.offsetY - 10)
+          .attr('x', event.offsetX + 20)
+          .attr('y', event.offsetY - 20)
           .attr('fill', '#fff')
-          .attr('font-size', '16px')
+          .attr('font-size', '18px')
           .attr('pointer-events', 'none')
           .text(d.properties.country || d.properties.NAME);
       }
     })
     .on('mousemove', function(event) {
       svg.select('.tooltip')
-        .attr('x', event.offsetX + 10)
-        .attr('y', event.offsetY - 10);
+        .attr('x', event.offsetX + 20)
+        .attr('y', event.offsetY - 20);
     })
     .on('mouseleave', function(_event, _d: Feature) {
       const element = this as SVGPathElement;
       hoverState.set(element, false);
       d3.select(this)
+        // .interrupt()
+        .style('filter', 'none')
         .style('fill-opacity', 0.8)
         .attr('fill', function() {
           return d3.select(this).attr('data-initial-fill') || '#1A1A1A';
         })
-        //     .attr('fill', '#1A1A1A')
         .transition()
-        .duration(200)
-        .attr('transform', 'scale(1)');
+        .duration(600)
+        .style('transform', 'scale(1)')
+        .style('transform-origin', 'center')
+        .style('transform-box', 'fill-box')
       svg.select('.tooltip').remove();
     });
 }
@@ -313,6 +318,19 @@ export const globeSetup = ({ width, height, radius, svg }: WidthHeight & SetupGr
     .rotate([0, 0])
     .clipAngle(80);
   const path = geoPath().projection(projection);
+
+  const glow = svg.append("defs").append("filter")
+    .attr("id", "white-glow")
+    .attr("x", "-50%")
+    .attr("y", "-50%")
+    .attr("width", "200%")
+    .attr("height", "200%");
+  glow.append("feDropShadow")
+    .attr("dx", 0)
+    .attr("dy", 0)
+    .attr("stdDeviation", 4)
+    .attr("flood-color", "white")
+    .attr("flood-opacity", 0.9);
 
   // Globe background (ocean)
   g.append('circle')
