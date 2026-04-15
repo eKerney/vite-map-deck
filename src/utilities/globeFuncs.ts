@@ -135,15 +135,25 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     .append('path')
     .attr('class', 'land')
     .attr('d', path)
-    .attr('fill', controlsState.color === 2
-      ? d => divergingVirdis(d3.geoCentroid(d)[1])
-      : controlsState.color === 3
-        ? d => divergingMagma(d3.geoCentroid(d)[1])
-        : '#1A1A1A'
-    )
-    .attr('fill-opacity', '0.6')
+    .attr('fill', function(d) {
+      const fillColor = controlsState.color === 2
+        ? divergingVirdis(d3.geoCentroid(d)[1])
+        : controlsState.color === 3
+          ? divergingMagma(d3.geoCentroid(d)[1])
+          : '#1A1A1A';
+      d3.select(this).attr('data-initial-fill', fillColor);
+      return fillColor;
+    })
+    // .attr('fill', controlsState.color === 2
+    //   ? d => divergingVirdis(d3.geoCentroid(d)[1])
+    //   : controlsState.color === 3
+    //     ? d => divergingMagma(d3.geoCentroid(d)[1])
+    //     : '#1A1A1A'
+    // )
+    .attr('fill-opacity', '0.8')
     .attr('stroke', 'white')
-    .attr('stroke-width', '.2px')
+    .attr('stroke-width', '.6px')
+    .attr('stroke-opacity', '0.2')
     .each(function() {
       d3.select(this).datum().isHovered = true;
     });
@@ -236,6 +246,7 @@ export type CountryFeatureProps = {
   country?: string;
   NAME: string;
 }
+
 export const dataInteractions = (
   features: d3.Selection<SVGPathElement, Feature<Polygon, CountryFeatureProps>, SVGGElement, unknown>,
   svg: d3.Selection<SVGSVGElement | null, unknown, null, undefined>,
@@ -278,7 +289,10 @@ export const dataInteractions = (
       hoverState.set(element, false);
       d3.select(this)
         .style('fill-opacity', 0.8)
-        .attr('fill', '#1A1A1A')
+        .attr('fill', function() {
+          return d3.select(this).attr('data-initial-fill') || '#1A1A1A';
+        })
+        //     .attr('fill', '#1A1A1A')
         .transition()
         .duration(200)
         .attr('transform', 'scale(1)');
