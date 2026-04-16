@@ -142,7 +142,7 @@ export const getA5GeoJSON = (geoJSONfeatures: Feature[], res: number) => {
 
 export const getAllA5centroids = (resolution: number) => {
   const cells = [];
-  const cellIds = cellToChildren(0n, resolution + 1);
+  const cellIds = cellToChildren(0n, resolution + 2);
 
   for (let cellId of cellIds) {
     const cellIdHex = u64ToHex(cellId);

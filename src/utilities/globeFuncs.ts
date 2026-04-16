@@ -144,16 +144,10 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
       d3.select(this).attr('data-initial-fill', fillColor);
       return fillColor;
     })
-    // .attr('fill', controlsState.color === 2
-    //   ? d => divergingVirdis(d3.geoCentroid(d)[1])
-    //   : controlsState.color === 3
-    //     ? d => divergingMagma(d3.geoCentroid(d)[1])
-    //     : '#1A1A1A'
-    // )
     .attr('fill-opacity', '0.8')
     .attr('stroke', 'white')
     .attr('stroke-width', '.5px')
-    .attr('stroke-opacity', '0.1')
+    .attr('stroke-opacity', '0.2')
     .each(function() {
       d3.select(this).datum().isHovered = true;
     });
@@ -264,12 +258,13 @@ export const dataInteractions = (
         d3.select(this)
           // .raise() 
           .interrupt()
-          .style('transform', 'scale(1.2)')
+          .style('transform', 'scale(1.3)')
           .style('transform-origin', 'center')
           .style('transform-box', 'fill-box')
           .style('filter', 'url(#white-glow)')
-          .style('fill-opacity', 0.5)       // ← Ensure full opacity
-          .attr('fill', '#ffffff')           // ← Pure white, not off-white
+          .style('fill-opacity', 0.5)
+          .style('stroke-opacity', 0.8)
+          .attr('fill', '#ffffff')
         svg.select('.tooltip').remove();
         svg.append('text')
           .attr('class', 'tooltip')
@@ -298,6 +293,7 @@ export const dataInteractions = (
         })
         .transition()
         .duration(600)
+        .style('stroke-opacity', 0.2)
         .style('transform', 'scale(1)')
         .style('transform-origin', 'center')
         .style('transform-box', 'fill-box')
