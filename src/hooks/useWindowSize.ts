@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { WindowSize } from "./types";
 
 
 export const useWindowSize = (): WindowSize => {
@@ -15,10 +16,9 @@ export const useWindowSize = (): WindowSize => {
       });
     };
     window.addEventListener('resize', handleResize);
-    // Call once on mount to ensure initial size is correct
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  }, []); // Empty dependency array—only runs on mount/unmount
+  }, []);
 
   return windowSize;
 }
