@@ -11,8 +11,9 @@ export interface PanelProps {
 
 export interface ControlProps {
   rotation: number,
-  land: 1 | 2,
+  land: 1 | 2 | 3,
   res: 1 | 2 | 3,
+  color: 1 | 2 | 3,
 };
 
 export type ControlItem = [string, number, number, number, number, string[] | number[], (e: React.ChangeEvent<HTMLInputElement>) => void];
