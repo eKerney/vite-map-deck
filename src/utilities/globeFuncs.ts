@@ -170,38 +170,40 @@ export const updateRotationSpeed = (newSpeed: number): void => {
   rotationEvent.call('speedChange', {}, newSpeed);
 }
 
-// working to move this outside of globeInteractions
-export const updateRotation = (controlsState, projection, features, graticules, g, path, newSpeed: number) => {
-  let lambda = 0, phi = 0, timer: d3.Timer | null = null;
-  if (timer) timer.stop();
-  timer = d3.timer(() => {
-    lambda += newSpeed;
-    projection.rotate([lambda, phi]);
-    features.attr('d', path);
-    graticules.attr('d', path);
-    g.select('circle').attr('d', path);
-  });
-  rotationEvent.on('speedChange', (newSpeed: number) => updateRotation(newSpeed));
-  updateRotation(controlsState.rotation); //init rotation
-};
+let rotationLambda = 0;
+let rotationPhi = 0;
+let rotationTimer: d3.Timer | null = null;
 
 export const globeInteractions = ({ width, height, svgRef, onGlobeClick, controlsState, radius, svg, g, projection, path, features, graticules }:
   WidthHeight & GlobeContexts & SetupGraphics & GlobeState & D3Features) => {
   // features.data([]).exit().remove(); // Clear data and remove unbound elements
-  features.on('click', null); // Remove click listeners
+  features.on('click', null);
 
   // Rotation state
   let lambda = 0, phi = 0, timer: d3.Timer | null = null;
   const updateRotation = (newSpeed: number) => {
-    if (timer) timer.stop();
-    timer = d3.timer(() => {
-      lambda += newSpeed;
-      projection.rotate([lambda, phi]);
+    if (rotationTimer) rotationTimer.stop();  // Stop OLD timer
+    rotationLambda = 0;  // Reset rotation
+    rotationPhi = 0;
+    rotationTimer = d3.timer(() => {
+      rotationLambda += newSpeed;
+      projection.rotate([rotationLambda, rotationPhi]);
       features.attr('d', path);
       graticules.attr('d', path);
       g.select('circle').attr('d', path);
     });
   };
+
+  //   if (timer) timer.stop();
+  //   timer = d3.timer(() => {
+  //     lambda += newSpeed;
+  //     projection.rotate([lambda, phi]);
+  //     features.attr('d', path);
+  //     graticules.attr('d', path);
+  //     g.select('circle').attr('d', path);
+  //   });
+  // };
+  rotationEvent.on('speedChange', null);
   rotationEvent.on('speedChange', (newSpeed: number) => updateRotation(newSpeed));
   updateRotation(controlsState.rotation); //init rotation
 
@@ -209,8 +211,8 @@ export const globeInteractions = ({ width, height, svgRef, onGlobeClick, control
   const drag = d3.drag<SVGSVGElement, unknown>()
     .on('drag', (event) => {
       const sensitivity = 0.25;
-      lambda += event.dx * sensitivity;
-      phi -= event.dy * sensitivity;
+      rotationLambda += event.dx * sensitivity;
+      rotationPhi -= event.dy * sensitivity;
       projection.rotate([lambda, phi]);
       features.attr('d', path);
       g.select('circle').attr('d', path);
