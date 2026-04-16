@@ -2,7 +2,7 @@ import DeckGL, { Layer, MapViewState } from 'deck.gl';
 import { Map, FullscreenControl } from 'react-map-gl/maplibre';
 import { memo } from 'react';
 
-export const DeckMap = memo(({ view_state, layers }:
+export const DeckMap = memo(({ view_state }:
   {
     view_state: MapViewState,
     layers: Layer[],

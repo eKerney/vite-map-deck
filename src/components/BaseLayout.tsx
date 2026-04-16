@@ -1,13 +1,12 @@
 import { MapViewState } from "deck.gl";
-import { DeckMap, D3Globe, Controls } from "../components"
+import { D3Globe, Controls } from "../components"
 import { RefObject, useEffect, useState } from "react";
 import { handleGlobeClick, updateRotationSpeed } from "../utilities/globeFuncs";
 import { ControlItem, ControlProps } from "./types";
 
 export const BaseLayout = () => {
-  const [viewState, setViewState] = useState<MapViewState>({ longitude: 0, latitude: 0, zoom: 2, pitch: 0, bearing: 0 });
+  const [_viewState, setViewState] = useState<MapViewState>({ longitude: 0, latitude: 0, zoom: 2, pitch: 0, bearing: 0 });
   const [controlsState, setControlsState] = useState<ControlProps>({ rotation: .05, land: 1, res: 1, color: 1 });
-  // const mapContStyle = "col-span-4 row-span-4 relative flex mt-8 -ml-24 opacity-0 rounded-lg shadow-2xl [border:0px_solid_transparent] bg-clip-padding [background-image:linear-gradient(to_right,#1A1A1A,#1A1A1A),linear-gradient(to_right,#5A67D8,#34C759)] border-custom-blue shadow-custom-blue";
 
   useEffect(() => {
     updateRotationSpeed(controlsState.rotation);

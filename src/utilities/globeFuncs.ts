@@ -3,13 +3,13 @@ import * as d3 from 'd3';
 import { geoOrthographic, geoPath } from 'd3-geo';
 import { FlyToInterpolator, MapViewState } from "deck.gl";
 import { D3Features, Feature, GlobeContexts, GlobeState, Polygon, SetupGraphics, WidthHeight } from "./types";
-import { interpolateViridis, interpolateInferno } from "d3";
+import { interpolateViridis } from "d3";
 
 
 export const handleGlobeClick = (
   coords: [number, number] | never[],
   screenPos: [number, number],
-  svgRef: RefObject<SVGSVGElement | null>,
+  _svgRef: RefObject<SVGSVGElement | null>,
   setViewState: Dispatch<SetStateAction<MapViewState>>,
 ) => {
 
@@ -60,7 +60,6 @@ export const handleGlobeClick = (
         .style('width', `${fWidth}px`)
         .style('height', `${fHeight}px`)
         .style('opacity', 0.9);
-      // drawLines(screenPos, { w: fWidth, h: fHeight, l: fLeft, t: fTop }, svgRef);
     }
     return ({
       ...prev,
@@ -101,7 +100,7 @@ export const drawLines = (
       .attr("fill", "none")
       .style('opacity', 0.3);
 
-    const totalLength = path.node().getTotalLength();
+    const totalLength = path?.node()?.getTotalLength() ?? '';
     path
       .attr("stroke-dasharray", totalLength)
       .attr("stroke-dashoffset", totalLength)
@@ -109,7 +108,7 @@ export const drawLines = (
       .duration(1600)
       .delay(i * 100)
       .ease(d3.easeQuadOut)
-      .attr("stroke-dashoffset", 0) // Reveal
+      .attr("stroke-dashoffset", 0)
   });
 };
 
@@ -148,9 +147,7 @@ export const drawGlobe = ({ width, height, svgRef, onGlobeClick, controlsState, 
     .attr('stroke', 'white')
     .attr('stroke-width', '.5px')
     .attr('stroke-opacity', '0.2')
-    .each(function() {
-      d3.select(this).datum().isHovered = true;
-    });
+    .each(function() { d3.select(this).datum().isHovered = true });
 
   const graticules = g.append('path')
     .datum(d3.geoGraticule10())
@@ -194,15 +191,6 @@ export const globeInteractions = ({ width, height, svgRef, onGlobeClick, control
     });
   };
 
-  //   if (timer) timer.stop();
-  //   timer = d3.timer(() => {
-  //     lambda += newSpeed;
-  //     projection.rotate([lambda, phi]);
-  //     features.attr('d', path);
-  //     graticules.attr('d', path);
-  //     g.select('circle').attr('d', path);
-  //   });
-  // };
   rotationEvent.on('speedChange', null);
   rotationEvent.on('speedChange', (newSpeed: number) => updateRotation(newSpeed));
   updateRotation(controlsState.rotation); //init rotation
@@ -342,7 +330,7 @@ export const globeSetup = ({ width, height, radius, svg }: WidthHeight & SetupGr
   return { g, path, projection };
 }
 
-export const globeGradient = ({ width, height, radius, svg }: WidthHeight & SetupGraphics) => {
+export const globeGradient = ({ _width, _height, radius, svg }: WidthHeight & SetupGraphics) => {
   const gradient = svg.append("defs").append("radialGradient")
     .attr("id", "gradient")
     .attr("cx", "75%")
