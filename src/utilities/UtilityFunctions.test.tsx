@@ -1,23 +1,7 @@
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it } from "vitest";
 import { a5cellIdsToGeoJSON, a5cellIdsToGeometries, a5PolygonToCell, getA5GeoJSON, getAllA5centroids } from "./utilFuncs";
 import h3SinglePolyMorocco from '../data/H3moroccoHexFeature.json';
-import { GeoJSONgeneric, Polygon, Feature } from "./types";
-
-// describe('test getWindDirection', function() {
-//   test('wind degrees 100: result should be E', () => {
-//     const input = 100, expected = 'E';
-//     expect(getWindDirection(input)).toStrictEqual(expected)
-//   })
-//   test('wind degrees 0: result should be N', () => {
-//     const input = 0, expected = 'N';
-//     expect(getWindDirection(input)).toStrictEqual(expected)
-//   })
-//   test('wind degrees 281.25: result should be WSW', () => {
-//     const input = 281.25, expected = 'WNW';
-//     expect(getWindDirection(input)).toStrictEqual(expected)
-//   })
-//
-// })
+import { Polygon } from "./types";
 
 describe('test getAllA5centroids', function() {
   it('returns valid cellIdHex, centroid at Res0 ', async () => {
